@@ -11,34 +11,81 @@ bl_info = {
 }
 
 import bpy
+import os
+import platform
+import re
+import math
+import mathutils
+
+from bpy.props import (StringProperty, BoolProperty, IntProperty, FloatProperty, EnumProperty, PointerProperty, CollectionProperty)
+from bpy.types import (Panel, Operator, PropertyGroup, UIList, Menu)
+
+
+
+
+from .properties import *
+
+from .operators.edit_collection_instance import *
+from .operators.export_scenes import ExportScenes
+from .operators.select_asset_folder import OT_OpenAssetsFolderBrowser
+
+from .ui.output_panel import SPARROW_PT_OutputPanel
+from .ui.object_panel import SPARROW_PT_ObjectPanel 
+from .ui.collection_panel import SPARROW_PT_CollectionPanel
+from .ui.scene_panel import SPARROW_PT_ScenePanel
+
+
+classes = [
+    # Properties
+    SPARROW_PG_Global,
+    SPARROW_PG_Scene,
+
+    # Panels
+    SPARROW_PT_ObjectPanel,
+    SPARROW_PT_CollectionPanel,
+    SPARROW_PT_OutputPanel,
+    SPARROW_PT_ScenePanel,
+    #SPARROW_PT_Output,
+
+    # Operators
+    ExportScenes,
+    EditCollectionInstance,
+    ExitCollectionInstance,
+    OT_OpenAssetsFolderBrowser,
+]
 
 addon_keymaps = []
 
-class ObjectMoveX(bpy.types.Operator):
-    """My Object Moving Script"""      # Use this as a tooltip for menu items and buttons.
-    bl_idname = "object.move_x"        # Unique identifier for buttons and menu items to reference.
-    bl_label = "Move X by One"         # Display name in the interface.
-    bl_options = {'REGISTER', 'UNDO'}  # Enable undo for the operator.
-
-    def execute(self, context):        # execute() is called when running the operator.
-
-        # The original script
-        scene = context.scene
-        for obj in scene.objects:
-            obj.location.x += 1.0
-
-        return {'FINISHED'}            # Lets Blender know the operator finished successfully.
-
-def menu_func(self, context):
-    self.layout.operator(ObjectMoveX.bl_idname)
-
 def register():
-    bpy.utils.register_class(ObjectMoveX)
-    bpy.types.VIEW3D_MT_object.append(menu_func)  # Adds the new operator to an existing menu.
+    for cls in classes:
+        bpy.utils.register_class(cls)
+        #print(f"Registered {cls.__name__}")
+
+    bpy.types.Scene.sparrow = bpy.props.PointerProperty(type=SPARROW_PG_Scene)
+    bpy.types.WindowManager.sparrow = bpy.props.PointerProperty(type=SPARROW_PG_Global)
+
+    bpy.types.VIEW3D_MT_object.append(edit_collection_menu)
+    bpy.types.VIEW3D_MT_object_context_menu.append(edit_collection_menu)
+    bpy.types.VIEW3D_MT_object.append(exit_collection_instance)
+    bpy.types.VIEW3D_MT_object_context_menu.append(exit_collection_instance)
+    
 
 def unregister():
-    bpy.utils.unregister_class(ObjectMoveX)
+    for cls in reversed(classes):    
+        try:               
+            bpy.utils.unregister_class(cls)
+        except RuntimeError as e:
+            print(f"Failed to unregister {cls.__name__}, Error: {e}")
+            pass
+    
+    del bpy.types.Scene.sparrow
+    del bpy.types.WindowManager.sparrow
 
+    bpy.types.VIEW3D_MT_object.remove(edit_collection_menu)
+    bpy.types.VIEW3D_MT_object_context_menu.remove(edit_collection_menu)
+    bpy.types.VIEW3D_MT_object.remove(exit_collection_instance)
+    bpy.types.VIEW3D_MT_object_context_menu.remove(exit_collection_instance)
+    
 if __name__ == "__main__":
     register()
   

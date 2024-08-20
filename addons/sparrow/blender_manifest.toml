@@ -4,7 +4,7 @@ schema_version = "1.0.0"
 # Change the values according to your extension
 id = "sparrow"
 version = "0.1.0"
-name = "Sparrow  Extension"
+name = "Sparrow"
 tagline = "Tooling for Bevy"
 maintainer = "slyedoc<james.towles+blender@gmail.com>"
 # Supported types: "add-on", "theme"
