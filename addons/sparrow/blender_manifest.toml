@@ -25,8 +25,8 @@ blender_version_min = "4.2.0"
 # License conforming to https://spdx.org/licenses/ (use "SPDX: prefix)
 # https://docs.blender.org/manual/en/dev/advanced/extensions/licenses.html
 license = [
-  "SPDX:MIT",
-  "SPDX:Apache-2.0",
+  "SPDX:MIT", # todo: think i have to go gpl due to autobake
+
 ]
 # Optional: required by some licenses.
 # copyright = [

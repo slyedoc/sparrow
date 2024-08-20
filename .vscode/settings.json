@@ -1,0 +1,7 @@
+{
+    "python.analysis.diagnosticSeverityOverrides": {
+        
+        "reportInvalidTypeForm": false,
+        "reportUnusedImport": "none"
+    },
+}

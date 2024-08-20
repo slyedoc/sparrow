@@ -1,3 +1,2 @@
 io_scene_gltf2
-numpy
 fake-bpy-module-4.1
