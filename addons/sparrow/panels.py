@@ -5,7 +5,6 @@ from .menu import *
 from .operators import *
 from .properties import *
 
-
 class SPARROW_PT_Collection:
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
@@ -49,21 +48,24 @@ class SPARROW_PT_OutputPanel(SPARROW_PT_Output, bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         #scene = context.scene
-        settings = bpy.context.window_manager.sparrow # type: SPARROW_PG_Global
+        settings = bpy.context.window_manager.sparrow_global # type: SPARROW_PG_Global
 
         col = layout.column_flow(columns=1)
         col.operator("sparrow.export_scenes", icon="RENDER_STILL", text="Export Scenes")
-
-        col.label(text= "Scenes" )
+        
+        col.label(text="Scenes")
+        box = col.box() 
+   
         for scene in bpy.data.scenes:       ## new 
-            row = col.row(align=True)            
-            scene_settings = scene.sparrow
+            row = box.row(align=True)            
+            scene_settings = scene.sparrow_scene
             row.prop(scene_settings, "export", text=scene.name)   ## changed
 
         col.separator()
         
+        col.label(text="Global Settings")
         box = layout.box() 
-        box.label(text="Global Settings")
+
         row = box.row()
         row.label(text="Assets Folder")
         row.prop(settings, "assets_path", text="")
@@ -74,6 +76,10 @@ class SPARROW_PT_OutputPanel(SPARROW_PT_Output, bpy.types.Panel):
         row.label(text="Registry File")
         row.prop(settings, "registry_file", text="")
         row.operator(OT_OpenRegistryFileBrowser.bl_idname, icon="FILE", text="")
+
+
+        row = box.row()
+        row.operator(LoadRegistry.bl_idname, text="Reload Registry")
         
         #folder_selector = row.operator(ReloadRegistryOperator.bl_idname, icon="FILE_FOLDER", text="")
         #folder_selector.target_property = "assets_path"

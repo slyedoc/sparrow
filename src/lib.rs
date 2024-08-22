@@ -19,7 +19,6 @@ impl Default for SparrowPlugin {
     }
 }
 
-
 #[derive(Resource)]
 pub struct SparrowConfig {
     pub save_path: PathBuf,
@@ -110,10 +109,10 @@ pub fn export_type(reg: &TypeRegistration) -> (String, Value) {
 
             json!({
                 "type": "object",
-                "typeInfo": "Struct",
+                "type_info": "Struct",
                 "long_name": t.type_path(),
                 "properties": properties,
-                "additionalProperties": false,
+                "additional_properties": false,
                 "required": info
                     .iter()
                     .filter(|field| !field.type_path().starts_with("core::option::Option"))
@@ -128,7 +127,7 @@ pub fn export_type(reg: &TypeRegistration) -> (String, Value) {
             if simple {
                 json!({
                     "type": "string",
-                    "typeInfo": "Enum",
+                    "type_info": "Enum",
                     "long_name": t.type_path(),
                     "oneOf": info
                         .iter()
@@ -147,7 +146,7 @@ pub fn export_type(reg: &TypeRegistration) -> (String, Value) {
                     //let short_name = binding.short_path();
                     VariantInfo::Struct(v) => json!({
                         "type": "object",
-                        "typeInfo": "Struct",
+                        "type_info": "Struct",
                         "long_name": v.name(),
                         "short_name": v.name().split("::").last().unwrap_or(v.name()),
                         "properties": v
@@ -155,7 +154,7 @@ pub fn export_type(reg: &TypeRegistration) -> (String, Value) {
                             .enumerate()
                             .map(|(variant_idx, field)| (field.name().to_owned(), add_min_max(json!({"type": typ(field.type_path()), "long_name": field.name()}), reg, field_idx, Some(variant_idx))))
                             .collect::<Map<_, _>>(),
-                        "additionalProperties": false,
+                        "additional_properties": false,
                         "required": v
                             .iter()
                             .filter(|field| !field.type_path().starts_with("core::option::Option"))
@@ -164,7 +163,7 @@ pub fn export_type(reg: &TypeRegistration) -> (String, Value) {
                     }),
                     VariantInfo::Tuple(v) => json!({
                         "type": "array",
-                        "typeInfo": "Tuple",
+                        "type_info": "Tuple",
                         "long_name": v.name(),
                         "short_name":v.name(),
                         "prefixItems": v
@@ -182,7 +181,7 @@ pub fn export_type(reg: &TypeRegistration) -> (String, Value) {
 
                 json!({
                     "type": "object",
-                    "typeInfo": "Enum",
+                    "type_info": "Enum",
                     "long_name": t.type_path(),
                     "oneOf": variants,
                 })
@@ -191,7 +190,7 @@ pub fn export_type(reg: &TypeRegistration) -> (String, Value) {
         TypeInfo::TupleStruct(info) => json!({
             "long_name": t.type_path(),
             "type": "array",
-            "typeInfo": "TupleStruct",
+            "type_info": "TupleStruct",
             "prefixItems": info
                 .iter()
                 .enumerate()
@@ -203,27 +202,27 @@ pub fn export_type(reg: &TypeRegistration) -> (String, Value) {
             json!({
                 "long_name": t.type_path(),
                 "type": "array",
-                "typeInfo": "List",
+                "type_info": "List",
                 "items": json!({"type": typ(info.item_type_path_table().path())}),
             })
         }
         TypeInfo::Array(info) => json!({
             "long_name": t.type_path(),
             "type": "array",
-            "typeInfo": "Array",
+            "type_info": "Array",
             "items": json!({"type": typ(info.item_type_path_table().path())}),
         }),
         TypeInfo::Map(info) => json!({
             "long_name": t.type_path(),
             "type": "object",
-            "typeInfo": "Map",
+            "type_info": "Map",
             "valueType": json!({"type": typ(info.value_type_path_table().path())}),
             "keyType": json!({"type": typ(info.key_type_path_table().path())}),
         }),
         TypeInfo::Tuple(info) => json!({
             "long_name": t.type_path(),
             "type": "array",
-            "typeInfo": "Tuple",
+            "type_info": "Tuple",
             "prefixItems": info
                 .iter()
                 .enumerate()
@@ -234,15 +233,15 @@ pub fn export_type(reg: &TypeRegistration) -> (String, Value) {
         TypeInfo::Value(info) => json!({
             "long_name": t.type_path(),
             "type": map_json_type(info.type_path()),
-            "typeInfo": "Value",
+            "type_info": "Value",
         }),
     };
     schema.as_object_mut().unwrap().insert(
-        "isComponent".to_owned(),
+        "is_component".to_owned(),
         reg.data::<ReflectComponent>().is_some().into(),
     );
     schema.as_object_mut().unwrap().insert(
-        "isResource".to_owned(),
+        "is_resource".to_owned(),
         reg.data::<ReflectResource>().is_some().into(),
     );
 

@@ -34,6 +34,10 @@ import platform
 import re
 import math
 import mathutils
+import functools
+
+from bpy.app.handlers import persistent
+
 
 from bpy.props import (StringProperty, BoolProperty, IntProperty, FloatProperty, EnumProperty, PointerProperty, CollectionProperty)
 from bpy.types import (Panel, Operator, PropertyGroup, UIList, Menu)
@@ -45,6 +49,8 @@ from .operators import *
 from .ui_lists import *
 from .menu import *
 
+
+
 classes = [
     # Operators
     ExportScenes,
@@ -52,13 +58,20 @@ classes = [
     ExitCollectionInstance,
     OT_OpenAssetsFolderBrowser,
     OT_OpenRegistryFileBrowser,
+    LoadRegistry,
 
     # Properties
+    SPARROW_PG_ComponentInfo,
     SPARROW_PG_Global,
+
+    SPARROW_PG_ComponentInstance,
     SPARROW_PG_Scene,
+    SPARROW_PG_Object,
+    SPARROW_PG_Collect,
+  
 
     # Properties
-    SPARROW_PG_Collection, SPARROW_PG_Bake, SPARROW_PG_BakeQueue, SPARROW_PG_UDIMType, SPARROW_PG_SourceObjects, SPARROW_PG_ImageExport, SPARROW_PG_ObjectQueue,
+    SPARROW_PG_Autobake, SPARROW_PG_Bake, SPARROW_PG_BakeQueue, SPARROW_PG_UDIMType, SPARROW_PG_SourceObjects, SPARROW_PG_ImageExport, SPARROW_PG_ObjectQueue,
     # Operator
     SPARROW_OT_BakeStart, SPARROW_OT_CancelBake, SPARROW_OT_PauseBake, SPARROW_OT_ResumeBake,
     SPARROW_OT_Add, SPARROW_OT_Remove, SPARROW_OT_Up, SPARROW_OT_Down, SPARROW_OT_ScaleDown, SPARROW_OT_ScaleUp, SPARROW_OT_LoadLinked,
@@ -84,36 +97,26 @@ classes = [
     SPARROW_PT_Transform, SPARROW_PT_Geometry, SPARROW_PT_Compression_GLTF, SPARROW_PT_ShapeKeys_GTLF, SPARROW_PT_Images_GLTF            
 ]
 
-def watch_registry():
-    print("Timer function is running")
-    return 1.0  # Run again in 1 second
-
-def watch_registry2():
-    print("watch_registry here")
-    settings = bpy.context.window_manager.sparrow # type: SPARROW_PG_Global
-    try:
-        stamp = os.stat(settings.registry_file).st_mtime
-        stamp = str(stamp)
-        if stamp != settings.registry_timestamp and settings.registry_timestamp != "":
-            print("FILE CHANGED !!", stamp,  settings.registry_timestamp)
-            settings.load_registry()
-        settings.registry_timestamp = stamp
-    except Exception as error:
-        print("Error reading registry file", error)
-        pass
-    return settings.registry_poll_frequency
+@persistent
+def post_load(file_name):
+    sparrow = bpy.context.window_manager.sparrow_global # type: SPARROW_PG_Global    
+    sparrow.load_settings()
+    sparrow.load_registry()
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
     # Global settings
-    bpy.types.WindowManager.sparrow = bpy.props.PointerProperty(type=SPARROW_PG_Global)
+    bpy.types.WindowManager.sparrow_global = bpy.props.PointerProperty(type=SPARROW_PG_Global)
 
-    bpy.types.Scene.sparrow = bpy.props.PointerProperty(type=SPARROW_PG_Scene)
+
+    bpy.types.Scene.sparrow_scene = bpy.props.PointerProperty(type=SPARROW_PG_Scene)
+    bpy.types.Object.sparrow_object = bpy.props.PointerProperty(type=SPARROW_PG_Object)
+    bpy.types.Collection.sparrow_collection = bpy.props.PointerProperty(type=SPARROW_PG_Collect)
 
     # from autobake
-    bpy.types.Scene.autobake_properties = PointerProperty(type=SPARROW_PG_Collection)
+    bpy.types.Scene.autobake_properties = PointerProperty(type=SPARROW_PG_Autobake)
 
     bpy.types.Scene.autobake_bakelist = CollectionProperty(type=SPARROW_PG_Bake)
     bpy.types.Scene.autobake_bakelist_index = IntProperty(name="Bake Item", default=0, update=name_by_index)
@@ -138,18 +141,18 @@ def register():
 
     # Auto Bake end
 
+    bpy.app.handlers.load_post.append(post_load)
     bpy.types.VIEW3D_MT_object.append(edit_collection_menu)
     bpy.types.VIEW3D_MT_object_context_menu.append(edit_collection_menu)
     bpy.types.VIEW3D_MT_object.append(exit_collection_instance)
     bpy.types.VIEW3D_MT_object_context_menu.append(exit_collection_instance)
 
-    # if not bpy.app.timers.is_registered(watch_registry):
-    #     print("adding timer")
-    bpy.app.timers.register(watch_registry)
-
 def unregister():
+    
+    if bpy.app.timers.is_registered(watch_registry):
+        bpy.app.timers.unregister(watch_registry)
 
-    bpy.app.timers.unregister(watch_registry)
+    bpy.app.handlers.load_post.append(post_load)
 
     bpy.types.VIEW3D_MT_object.remove(edit_collection_menu)
     bpy.types.VIEW3D_MT_object_context_menu.remove(edit_collection_menu)
@@ -166,6 +169,8 @@ def unregister():
 
     del bpy.types.Scene.sparrow
     del bpy.types.WindowManager.sparrow
+
+    
 
     # from autobake
     del bpy.types.Scene.autobake_properties

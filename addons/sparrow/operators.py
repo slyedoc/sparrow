@@ -31,7 +31,7 @@ class EditCollectionInstance(Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):  
-        sparrow: SPARROW_PG_Global = context.window_manager.sparrow         
+        sparrow: SPARROW_PG_Global = context.window_manager.sparrow_global         
         sparrow.last_scene = None
         coll = bpy.context.active_object.instance_collection #type: bpy.types.Collection
 
@@ -106,14 +106,14 @@ class ExportScenes(Operator):
     bl_options = {'REGISTER', 'UNDO'}  # Enable undo for the operator.
 
     def execute(self, context):          
-        settings = bpy.context.window_manager.sparrow # type: SPARROW_PG_Global      
+        settings = bpy.context.window_manager.sparrow_global # type: SPARROW_PG_Global      
         p = os.path.join(settings.assets_path, SCENE_FOLDER)
         if not os.path.exists(p):
-            print(f"Creating {settings.assets_path}")
-            os.makedirs(p)
+            print(f"ERROR: Scene folder does not exist: {p}")
+            return {'CANCELLED'}
 
         for scene in bpy.data.scenes:
-            scene_settings: SPARROW_PG_Scene = scene.sparrow
+            scene_settings: SPARROW_PG_Scene = scene.sparrow_scene
 
             if scene_settings.export:                                
                 gltf_path = os.path.abspath(os.path.join(p, scene.name))
@@ -194,9 +194,6 @@ def recurLayerCollection(layerColl, collName):
             return found
 
 
-
-
-
 class LoadRegistry(Operator):
     """Load the registry file"""
     bl_idname = "sparrow.load_registry"
@@ -204,27 +201,9 @@ class LoadRegistry(Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
-        settings = bpy.context.window_manager.sparrow # type: SPARROW_PG_Global
-        
-        info = None
-        # load registry file if it exists
-        if os.path.exists(self.registry_file):            
-            try:
-                with open(self.registry_file) as f:
-                    data = json.load(f)
-                    defs = data.get("$defs", {})
-                    info = defs                                        
-            except (IOError, json.JSONDecodeError) as e:
-                print(f"ERROR: An error occurred while reading the file: {e}")
-                return
-        else:
-            print(f"WARN: registy file does not exist: {self.registry_file}")
-            return
-        
-        if not info:
-            print(f"WARN: registry file is empty: {self.registry_file}")
-            return
-
+        settings = bpy.context.window_manager.sparrow_global # type: SPARROW_PG_Global
+        settings.load_registry()
+        return {'FINISHED'}
 
 class OT_OpenAssetsFolderBrowser(Operator, ImportHelper):
     """Assets folder's browser"""
@@ -236,14 +215,13 @@ class OT_OpenAssetsFolderBrowser(Operator, ImportHelper):
         name="Outdir Path",
         description="selected folder"
         # subtype='DIR_PATH' is not needed to specify the selection mode.
-        # But this will be anyway a directory path.
-        ) # type: ignore
+    ) # type: ignore
 
     # Filters folders
     filter_folder: bpy.props.BoolProperty(
         default=True,
         options={"HIDDEN"}
-        ) # type: ignore
+    ) # type: ignore
     
     target_property: bpy.props.StringProperty(
         name="target_property",
@@ -252,7 +230,7 @@ class OT_OpenAssetsFolderBrowser(Operator, ImportHelper):
     
     def execute(self, context): 
         """Do something with the selected file(s)."""
-        settings = bpy.context.window_manager.sparrow # type: SPARROW_PG_Global
+        settings = bpy.context.window_manager.sparrow_global # type: SPARROW_PG_Global
         setattr(settings, self.target_property, self.directory)
         return {'FINISHED'}
 
@@ -268,11 +246,10 @@ class OT_OpenRegistryFileBrowser(Operator, ImportHelper):
     
     def execute(self, context): 
         """Do something with the selected file(s)."""
-        sparrow = context.window_manager.sparrow # type: SPARROW_PG_Global
+        sparrow = context.window_manager.sparrow_global # type: SPARROW_PG_Global
         sparrow.registry_file = self.filepath
-        sparrow.load_registry()        
+        sparrow.load_registry()       
         return {'FINISHED'}
-
 
 #------------------------------------------------------------------------------------
 #   Below here is from AutoBake
@@ -291,7 +268,6 @@ class SPARROW_OT_LoadLinked(Operator):
                     ("After", "After", "New items will be placed after the currently selected item"),
                     ("First", "First", "New items will be placed at the top of the list"),
                     ("Last", "Last", "New items will be placed at the bottom of the list")])
-    
     
     def invoke(self, context, event):
         scene = context.scene
