@@ -192,7 +192,10 @@ def recurLayerCollection(layerColl, collName):
         found = recurLayerCollection(layer, collName)
         if found:
             return found
-        
+
+
+
+
 
 class LoadRegistry(Operator):
     """Load the registry file"""
@@ -225,7 +228,7 @@ class LoadRegistry(Operator):
 
 class OT_OpenAssetsFolderBrowser(Operator, ImportHelper):
     """Assets folder's browser"""
-    bl_idname = "bevy.open_folderbrowser" 
+    bl_idname = "sparrow.open_folderbrowser" 
     bl_label = "Select folder" 
 
     # Define this to tell 'fileselect_add' that we want a directoy
@@ -253,9 +256,26 @@ class OT_OpenAssetsFolderBrowser(Operator, ImportHelper):
         setattr(settings, self.target_property, self.directory)
         return {'FINISHED'}
 
+class OT_OpenRegistryFileBrowser(Operator, ImportHelper):
+    """Browse for registry json file"""
+    bl_idname = "sparrow.open_registryfilebrowser" 
+    bl_label = "Open the file browser" 
+
+    filter_glob: StringProperty( 
+        default='*.json', 
+        options={'HIDDEN'} 
+    ) # type: ignore
+    
+    def execute(self, context): 
+        """Do something with the selected file(s)."""
+        sparrow = context.window_manager.sparrow # type: SPARROW_PG_Global
+        sparrow.registry_file = self.filepath
+        sparrow.load_registry()        
+        return {'FINISHED'}
+
 
 #------------------------------------------------------------------------------------
-#   Operators
+#   Below here is from AutoBake
 
 class SPARROW_OT_LoadLinked(Operator):
     bl_idname = "sparrow.bakelist_load_linked"
@@ -2564,7 +2584,6 @@ class SPARROW_OT_BakeStart(Operator):
                 
                 # Type Name
                     type_names = {}
-                    print(item.Type, abp.ab_baketype_name_all)
                     for item_ in abp.ab_baketype_name_all.split(', '):
                         type_names[item_.split(':')[0]] = item_.split(':')[1]
                     self.type_name = type_names[item.Type]

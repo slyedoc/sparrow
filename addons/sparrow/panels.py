@@ -49,7 +49,7 @@ class SPARROW_PT_OutputPanel(SPARROW_PT_Output, bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         #scene = context.scene
-        settings = bpy.context.window_manager.sparrow # type: SPARROW_PG_Scene
+        settings = bpy.context.window_manager.sparrow # type: SPARROW_PG_Global
 
         col = layout.column_flow(columns=1)
         col.operator("sparrow.export_scenes", icon="RENDER_STILL", text="Export Scenes")
@@ -61,13 +61,22 @@ class SPARROW_PT_OutputPanel(SPARROW_PT_Output, bpy.types.Panel):
             row.prop(scene_settings, "export", text=scene.name)   ## changed
 
         col.separator()
-
-        row = col.row()
+        
+        box = layout.box() 
+        box.label(text="Global Settings")
+        row = box.row()
         row.label(text="Assets Folder")
         row.prop(settings, "assets_path", text="")
-
         folder_selector = row.operator(OT_OpenAssetsFolderBrowser.bl_idname, icon="FILE_FOLDER", text="")
         folder_selector.target_property = "assets_path"
+
+        row = box.row()
+        row.label(text="Registry File")
+        row.prop(settings, "registry_file", text="")
+        row.operator(OT_OpenRegistryFileBrowser.bl_idname, icon="FILE", text="")
+        
+        #folder_selector = row.operator(ReloadRegistryOperator.bl_idname, icon="FILE_FOLDER", text="")
+        #folder_selector.target_property = "assets_path"
 
 class SPARROW_PT_Scene:
     bl_space_type = 'PROPERTIES'
@@ -80,7 +89,7 @@ class SPARROW_PT_ScenePanel(SPARROW_PT_Scene, bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-     
+
         col = layout.column_flow(columns=1)
         row = col.row(align=True)
         row.label(text="Testing")

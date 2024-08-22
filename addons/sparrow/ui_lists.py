@@ -3,9 +3,9 @@ import bpy
 import os
 import platform
 import re
+
 from .utils import *
 
-from typing import Annotated, Optional
 from bpy.props import (StringProperty, BoolProperty, IntProperty, FloatProperty, EnumProperty, PointerProperty, CollectionProperty)
 from bpy.types import (Material, Scene, Panel, Operator, PropertyGroup, UIList, Menu)
 

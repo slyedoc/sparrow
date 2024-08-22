@@ -51,6 +51,7 @@ classes = [
     EditCollectionInstance,
     ExitCollectionInstance,
     OT_OpenAssetsFolderBrowser,
+    OT_OpenRegistryFileBrowser,
 
     # Properties
     SPARROW_PG_Global,
@@ -58,46 +59,58 @@ classes = [
 
     # Properties
     SPARROW_PG_Collection, SPARROW_PG_Bake, SPARROW_PG_BakeQueue, SPARROW_PG_UDIMType, SPARROW_PG_SourceObjects, SPARROW_PG_ImageExport, SPARROW_PG_ObjectQueue,
-        # Operator
-            SPARROW_OT_BakeStart, SPARROW_OT_CancelBake, SPARROW_OT_PauseBake, SPARROW_OT_ResumeBake,
-            SPARROW_OT_Add, SPARROW_OT_Remove, SPARROW_OT_Up, SPARROW_OT_Down, SPARROW_OT_ScaleDown, SPARROW_OT_ScaleUp, SPARROW_OT_LoadLinked,
-            SPARROW_OT_Add_UDIM, SPARROW_OT_Remove_UDIM, SPARROW_OT_Down_UDIM, SPARROW_OT_Up_UDIM, SPARROW_OT_MoveTop_UDIM, SPARROW_OT_MoveBottom_UDIM,
-            SPARROW_OT_RemoveDisabled, SPARROW_OT_RemoveDuplicates, SPARROW_OT_RemoveAll, SPARROW_OT_EnableAll, SPARROW_OT_DisableAll, SPARROW_OT_InvertAll, SPARROW_OT_MoveTop, SPARROW_OT_MoveBottom, SPARROW_PG_UDIMTile, 
-            SPARROW_OT_RemoveDisabled_UDIM, SPARROW_OT_RemoveDuplicates_UDIM, SPARROW_OT_RemoveAll_UDIM, SPARROW_OT_EnableAll_UDIM, SPARROW_OT_DisableAll_UDIM, SPARROW_OT_InvertAll_UDIM, SPARROW_OT_Sort_UDIM, SPARROW_OT_ImportTiles_UDIM,
-            SPARROW_OT_ToggleQueueItem, SPARROW_OT_ToggleObjectQueueItem, SPARROW_OT_BakeConfirm, SPARROW_OT_NextObject, SPARROW_OT_ExportTextures, SPARROW_OT_Sort, SPARROW_OT_NameStructure, SPARROW_OT_FolderExplorer,
-            SPARROW_OT_SelectFromList, SPARROW_OT_LoadFromSelected,
-        # UIList
-            SPARROW_UL_Bake, SPARROW_UL_BakeQueue, SPARROW_UL_UDIMTile, SPARROW_UL_UDIMType, SPARROW_UL_SourceObjects, SPARROW_UL_ImageExport, SPARROW_UL_ObjectQueue,
-        # Menu
-            SPARROW_MT_BakeList, SPARROW_MT_UDIMList, SPARROW_MT_ItemEdit, SPARROW_MT_ItemEdit_UDIM, SPARROW_MT_Confirms, SPARROW_MT_Alerts, SPARROW_MT_ColorSpace, SPARROW_MT_StartPopupSettings,SPARROW_MT_Reports,
-        
-        # Panels
-        SPARROW_PT_ObjectPanel,
-        SPARROW_PT_CollectionPanel,
-        SPARROW_PT_OutputPanel,
-        SPARROW_PT_ScenePanel,
-        #SPARROW_PT_Output,
-        
-        # Auto Bake Panels
+    # Operator
+    SPARROW_OT_BakeStart, SPARROW_OT_CancelBake, SPARROW_OT_PauseBake, SPARROW_OT_ResumeBake,
+    SPARROW_OT_Add, SPARROW_OT_Remove, SPARROW_OT_Up, SPARROW_OT_Down, SPARROW_OT_ScaleDown, SPARROW_OT_ScaleUp, SPARROW_OT_LoadLinked,
+    SPARROW_OT_Add_UDIM, SPARROW_OT_Remove_UDIM, SPARROW_OT_Down_UDIM, SPARROW_OT_Up_UDIM, SPARROW_OT_MoveTop_UDIM, SPARROW_OT_MoveBottom_UDIM,
+    SPARROW_OT_RemoveDisabled, SPARROW_OT_RemoveDuplicates, SPARROW_OT_RemoveAll, SPARROW_OT_EnableAll, SPARROW_OT_DisableAll, SPARROW_OT_InvertAll, SPARROW_OT_MoveTop, SPARROW_OT_MoveBottom, SPARROW_PG_UDIMTile, 
+    SPARROW_OT_RemoveDisabled_UDIM, SPARROW_OT_RemoveDuplicates_UDIM, SPARROW_OT_RemoveAll_UDIM, SPARROW_OT_EnableAll_UDIM, SPARROW_OT_DisableAll_UDIM, SPARROW_OT_InvertAll_UDIM, SPARROW_OT_Sort_UDIM, SPARROW_OT_ImportTiles_UDIM,
+    SPARROW_OT_ToggleQueueItem, SPARROW_OT_ToggleObjectQueueItem, SPARROW_OT_BakeConfirm, SPARROW_OT_NextObject, SPARROW_OT_ExportTextures, SPARROW_OT_Sort, SPARROW_OT_NameStructure, SPARROW_OT_FolderExplorer,
+    SPARROW_OT_SelectFromList, SPARROW_OT_LoadFromSelected,
+    # UIList
+    SPARROW_UL_Bake, SPARROW_UL_BakeQueue, SPARROW_UL_UDIMTile, SPARROW_UL_UDIMType, SPARROW_UL_SourceObjects, SPARROW_UL_ImageExport, SPARROW_UL_ObjectQueue,
+    # Menu
+    SPARROW_MT_BakeList, SPARROW_MT_UDIMList, SPARROW_MT_ItemEdit, SPARROW_MT_ItemEdit_UDIM, SPARROW_MT_Confirms, SPARROW_MT_Alerts, SPARROW_MT_ColorSpace, SPARROW_MT_StartPopupSettings,SPARROW_MT_Reports,
 
-        SPARROW_PT_Bake, SPARROW_PT_Lists, SPARROW_PT_List_UDIM,
-        SPARROW_PT_Image, SPARROW_PT_Name, SPARROW_PT_Format, SPARROW_PT_Export, SPARROW_PT_ColorOverride,
-        SPARROW_PT_Settings, SPARROW_PT_Margin, SPARROW_PT_SelectedToActive, SPARROW_PT_SelectionHelp, SPARROW_PT_Sampling, SPARROW_PT_Denoise, SPARROW_PT_Sampling_Low, SPARROW_PT_Denoise_Low, SPARROW_PT_Sampling_High, SPARROW_PT_Denoise_High,
-        SPARROW_PT_Addon, SPARROW_PT_ImageSettings, SPARROW_PT_Materials, SPARROW_PT_Objects, SPARROW_PT_ObjectExport, SPARROW_PT_BakeList, SPARROW_PT_BakeQueue, SPARROW_PT_Miscellaneous,
-        SPARROW_PT_Transform, SPARROW_PT_Geometry, SPARROW_PT_Compression_GLTF, SPARROW_PT_ShapeKeys_GTLF, SPARROW_PT_Images_GLTF            
+    # Panels
+    
+    SPARROW_PT_ObjectPanel, SPARROW_PT_CollectionPanel, SPARROW_PT_OutputPanel, SPARROW_PT_ScenePanel,
+
+    # Auto Bake Panels
+    SPARROW_PT_Bake, SPARROW_PT_Lists, SPARROW_PT_List_UDIM,
+    SPARROW_PT_Image, SPARROW_PT_Name, SPARROW_PT_Format, SPARROW_PT_Export, SPARROW_PT_ColorOverride,
+    SPARROW_PT_Settings, SPARROW_PT_Margin, SPARROW_PT_SelectedToActive, SPARROW_PT_SelectionHelp, SPARROW_PT_Sampling, SPARROW_PT_Denoise, SPARROW_PT_Sampling_Low, SPARROW_PT_Denoise_Low, SPARROW_PT_Sampling_High, SPARROW_PT_Denoise_High,
+    SPARROW_PT_Addon, SPARROW_PT_ImageSettings, SPARROW_PT_Materials, SPARROW_PT_Objects, SPARROW_PT_ObjectExport, SPARROW_PT_BakeList, SPARROW_PT_BakeQueue, SPARROW_PT_Miscellaneous,
+    SPARROW_PT_Transform, SPARROW_PT_Geometry, SPARROW_PT_Compression_GLTF, SPARROW_PT_ShapeKeys_GTLF, SPARROW_PT_Images_GLTF            
 ]
 
+def watch_registry():
+    print("Timer function is running")
+    return 1.0  # Run again in 1 second
 
-
-addon_keymaps = []
+def watch_registry2():
+    print("watch_registry here")
+    settings = bpy.context.window_manager.sparrow # type: SPARROW_PG_Global
+    try:
+        stamp = os.stat(settings.registry_file).st_mtime
+        stamp = str(stamp)
+        if stamp != settings.registry_timestamp and settings.registry_timestamp != "":
+            print("FILE CHANGED !!", stamp,  settings.registry_timestamp)
+            settings.load_registry()
+        settings.registry_timestamp = stamp
+    except Exception as error:
+        print("Error reading registry file", error)
+        pass
+    return settings.registry_poll_frequency
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
-        #print(f"Registered {cls.__name__}")
+
+    # Global settings
+    bpy.types.WindowManager.sparrow = bpy.props.PointerProperty(type=SPARROW_PG_Global)
 
     bpy.types.Scene.sparrow = bpy.props.PointerProperty(type=SPARROW_PG_Scene)
-    bpy.types.WindowManager.sparrow = bpy.props.PointerProperty(type=SPARROW_PG_Global)
 
     # from autobake
     bpy.types.Scene.autobake_properties = PointerProperty(type=SPARROW_PG_Collection)
@@ -123,12 +136,27 @@ def register():
     bpy.types.Scene.autobake_objectqueuelist = CollectionProperty(type=SPARROW_PG_ObjectQueue)
     bpy.types.Scene.autobake_objectqueuelist_index = IntProperty(name="Object Bake Item", default=0, update=bake_result)
 
+    # Auto Bake end
+
     bpy.types.VIEW3D_MT_object.append(edit_collection_menu)
     bpy.types.VIEW3D_MT_object_context_menu.append(edit_collection_menu)
     bpy.types.VIEW3D_MT_object.append(exit_collection_instance)
     bpy.types.VIEW3D_MT_object_context_menu.append(exit_collection_instance)
 
+    # if not bpy.app.timers.is_registered(watch_registry):
+    #     print("adding timer")
+    bpy.app.timers.register(watch_registry)
+
 def unregister():
+
+    bpy.app.timers.unregister(watch_registry)
+
+    bpy.types.VIEW3D_MT_object.remove(edit_collection_menu)
+    bpy.types.VIEW3D_MT_object_context_menu.remove(edit_collection_menu)
+
+    bpy.types.VIEW3D_MT_object.remove(exit_collection_instance)
+    bpy.types.VIEW3D_MT_object_context_menu.remove(exit_collection_instance)
+
     for cls in reversed(classes):    
         try:               
             bpy.utils.unregister_class(cls)
@@ -136,15 +164,10 @@ def unregister():
             print(f"Failed to unregister {cls.__name__}, Error: {e}")
             pass
 
-    bpy.types.VIEW3D_MT_object.remove(lambda self, context: self.layout.operator(EditCollectionInstance.bl_idname))
-    bpy.types.VIEW3D_MT_object_context_menu.remove(lambda self, context: self.layout.operator(EditCollectionInstance.bl_idname))
-
-    bpy.types.VIEW3D_MT_object.remove(exit_collection_instance)
-    bpy.types.VIEW3D_MT_object_context_menu.remove(exit_collection_instance)
-    
     del bpy.types.Scene.sparrow
     del bpy.types.WindowManager.sparrow
 
+    # from autobake
     del bpy.types.Scene.autobake_properties
     
     del bpy.types.Scene.autobake_bakelist
@@ -167,7 +190,6 @@ def unregister():
     
     del bpy.types.Scene.autobake_objectqueuelist
     del bpy.types.Scene.autobake_objectqueuelist_index
-
 
 def name_by_index(self, context):
     scene = context.scene

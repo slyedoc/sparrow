@@ -2,34 +2,157 @@ import bpy
 import os
 import platform
 import re
+import json
 from .utils import *
 
-from typing import Annotated, Optional
 from bpy.props import (StringProperty, BoolProperty, IntProperty, FloatProperty, EnumProperty, PointerProperty, CollectionProperty)
 from bpy.types import (Material, Scene, Panel, Operator, PropertyGroup, UIList, Menu)
 
 class SPARROW_PG_Global(PropertyGroup):
+    def load_registry(self):
+        pass
+        # self.propGroupIdCounter = 0
+        # self.missing_types_list.clear()
+
+        # # create new registry data
+        # # IMPORTANT: This does not work
+        # #   self.type_data = RegistryData()
+        # # This does, python fml
+        # self.type_data.type_infos.clear()
+        # self.type_data.type_infos_missing.clear()
+        # self.type_data.component_propertyGroups.clear()
+        # self.type_data.custom_types_to_add.clear()
+        # self.type_data.invalid_components.clear()
+        # self.type_data.long_names_to_propgroup_names.clear()
+        
+        # load registry file if it exists
+        defs = None
+        if os.path.exists(self.registry_file):            
+            try:
+                with open(self.registry_file) as f:
+                    data = json.load(f)
+                    defs = data.get("$defs", {})                    
+            except (IOError, json.JSONDecodeError) as e:
+                print(f"ERROR: An error occurred while reading the file: {e}")
+                return
+        else:
+            print(f"WARN: registy file does not exist: {self.registry_file}")
+            return            
+        
+        if not defs:
+            print("ERROR: registry file is empty")
+            return
+        print(f"INFO: loaded {len(defs)} types from registry file: {self.registry_file}")
+
+        # # helper function that returns a lambda, used for the PropertyGroups update function below        
+        # def update_calback_helper(definition, update, component_name_override):
+        #     return lambda self, context: update(self, context, definition, component_name_override)
+
+        # # called on updated by generated property groups for component_meta, serializes component_meta then saves it to bevy_components
+        # def update_component(self, context, definition, component_name):
+        #     bevy = bpy.context.window_manager.bevy # type: BevySettings
+            
+        #     # get selected object or collection:
+        #     current_object_or_collection = None
+        #     object = next(iter(context.selected_objects), None)
+        #     collection = context.collection
+        #     if object is not None:
+        #         current_object_or_collection = object
+        #     elif collection is not None:
+        #         current_object_or_collection = collection            
+            
+        #     # if we have an object or collection
+        #     if current_object_or_collection:
+        #         update_disabled = current_object_or_collection["__disable__update"] if "__disable__update" in current_object_or_collection else False
+        #         update_disabled = bevy.disable_all_object_updates or update_disabled # global settings
+        #         if update_disabled:
+        #             return
+                
+        #         if current_object_or_collection["components_meta"] is None:
+        #             print("ERROR: object does not have components_meta", current_object_or_collection.name)
+        #             return
+                
+        #         components_in_object = current_object_or_collection.components_meta.components
+        #         component_meta =  next(filter(lambda component: component["long_name"] == component_name, components_in_object), None)
+
+        #         if component_meta is not None:
+        #             property_group_name = bevy.type_data.long_names_to_propgroup_names.get(component_name, None)
+        #             property_group = getattr(component_meta, property_group_name)
+        #             # we use our helper to set the values
+        #             previous = json.loads(current_object_or_collection['bevy_components'])
+        #             previous[component_name] = bevy.property_group_value_to_custom_property_value(property_group, definition, None)
+        #             current_object_or_collection['bevy_components'] = json.dumps(previous)
+
+        # # Generate propertyGroups for all components        
+        # for component_name in self.type_data.type_infos:
+        #     definition = self.type_data.type_infos.get(component_name, None) 
+        #     if definition:
+        #         self.process_component(definition, update_calback_helper(definition, update_component, component_name), None, [])                
+        #     else:
+        #         print(f"ERROR: could not find definition for component {component_name}")
+        #         #self.data.type_infos_missing.append(component_name)
+
+        # # if we had to add any wrapper types on the fly, process them now
+        # for long_name in self.type_data.custom_types_to_add:
+        #     self.type_data.type_infos[long_name] = self.type_data.custom_types_to_add[long_name]
+        # self.type_data.custom_types_to_add.clear() 
+
+        # # build ui list of components, from new registry data
+        # self.ui_components.clear()
+        # exclude = ['Parent', 'Children', 'Handle', 'Cow', 'AssetId']         
+        # sorted_components = sorted(
+        #     ((long_name, definition["short_name"]) for long_name, definition in self.type_data.type_infos.items()
+        #     if definition.get("isComponent", False) and not any(definition["short_name"].startswith(ex) for ex in exclude)),
+        #     key=lambda item: item[1]  # Sort by short_name
+        # )               
+        # for long_name, short_name in sorted_components:
+        #     added = self.ui_components.add()
+        #     added.long_name = long_name
+        #     added.short_name = short_name
+
+        # # start timer
+        # # TODO: default start to now, right now we always trigger at start
+        # if not self.watcher_active and self.watcher_enabled:
+        #     self.watcher_active = True
+        #     bpy.app.timers.register(watch_registry)
+
+        # # how can self.type_infos 616, then 0 everywhere else ?
+        # print(f"INFO: loaded {len(self.type_data.type_infos)} types from registry file: {self.registry_file}")
+
+        # # ensure metadata for allobjects
+        # # FIXME: feels a bit heavy duty, should only be done
+        # # if the components panel is active ?
+        # for object in bpy.data.objects:
+        #     self.add_metadata_to_components_without_metadata(object)
+
     last_scene:  PointerProperty(name="last scene", type=Scene, options= set())
-    asset_path: StringProperty(
+    assets_path: StringProperty(
         name='Export folder',
         description='The root folder for all exports(relative to the root folder/path) Defaults to "assets" ',
-        default='./assets',
+        default='../assets',
         options={'HIDDEN'},
     ) # type: ignore
     registry_file: StringProperty(
         name='Registry File',
         description='The registry.json file',
-        default='./assets/registry.json',
+        default='./registry.json',
         options={'HIDDEN'},
     )
+    registry_poll_frequency: IntProperty(
+        name="watcher poll frequency",
+        description="frequency (s) at wich to poll for changes to the registry file",
+        min=1,
+        max=10,
+        default=1
+    )# type: ignore
+    registry_timestamp: StringProperty(
+        name="last timestamp of schema file",
+        description="",
+        default=""
+    )# type: ignore
         
 class SPARROW_PG_Scene(PropertyGroup):
-    export: Annotated[bool, BoolProperty(name="Export", description="Automatically export scene as level", default = False, options = set())] # type: ignore
-
-
-class SPARROW_PG_Collection(PropertyGroup):
     export: BoolProperty(name="Export", description="Automatically export scene as level", default = False, options = set()) # type: ignore
-
     
 #------------------------------------------------------------------------------------
 #   Properties
@@ -89,9 +212,10 @@ class SPARROW_PG_Collection(PropertyGroup):
         if self.ab_source_object_method == 'LIST' and not scene.autobake_sourceobject:
             scene.autobake_sourceobject.add()
         
-
 # # # # # # # # # # # # # #
 # Main
+
+    export: BoolProperty(name="Export", description="Automatically export scene as level", default = False, options = set()) # type: ignore
 
     ab_texture_export : BoolProperty(name="Export", description="Automatically export the baked texture(s) to the given file path", default = False, options = set()) # type: ignore
     
