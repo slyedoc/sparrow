@@ -5,26 +5,13 @@ from .menu import *
 from .operators import *
 from .properties import *
 
-class SPARROW_PT_Collection:
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = "collection"
-
-class SPARROW_PT_CollectionPanel(SPARROW_PT_Collection, bpy.types.Panel):
-    bl_idname = "SPARROW_PT_collection"
-    bl_label = "Bevy Components"
-
-    def draw(self, context):
-        layout = self.layout
-     
-        col = layout.column_flow(columns=1)
-        row = col.row(align=True)
-        row.label(text="Testing")
-
 def draw_components(item, layout, settings: SPARROW_PG_Settings, registry: ComponentsRegistry):
     if item is None:
         layout.label(text ="Select an object to edit its components")
         return
+    
+    item_type = get_selection_type(item)
+    item_name = item.name
 
     if registry.has_type_infos() is None:
         layout.label(text ="No registry loaded, please load a registry file")
@@ -42,6 +29,8 @@ def draw_components(item, layout, settings: SPARROW_PG_Settings, registry: Compo
 
     op = row.operator(SPARROW_OT_AddComponent.bl_idname, text="Add", icon="ADD")
     op.component_type = settings.components_dropdown.list
+    op.target_item_name = item_name
+    op.target_item_type = item_type
     row.enabled = settings.components_dropdown.list != ''
     
     layout.separator()
@@ -54,27 +43,29 @@ def draw_components(item, layout, settings: SPARROW_PG_Settings, registry: Compo
     # op = row.operator(SPARROW_OT_components_refresh_custom_properties_all.bl_idname, text="Refresh", icon="SYNTAX_ON")
     
     row =  col.row(align=True)
-    row.operator(SPARROW_OT_PasteComponent.bl_idname, text="Paste component ("+settings.copied_source_component_name+")", icon="PASTEDOWN")
-    row.enabled = registry.has_type_infos() and settings.copied_source_object != ''
+    op = row.operator(SPARROW_OT_PasteComponent.bl_idname, text="Paste component ("+settings.copied_source_component_name+")", icon="PASTEDOWN")
+    op.target_item_name = item_name
+    op.target_item_type = item_type
+    
+    
+    row.enabled = registry.has_type_infos() and settings.copied_source_item_name != '' 
 
     layout.separator()
 
     bevy_components = get_bevy_components(item)
+
+
+
     for component_name in sorted(bevy_components): # sorted by component name, practical
 
-        component_meta: ComponentMetadata = next(filter(lambda component: component["long_name"] == component_name, components_meta.components), None)
+        component_meta: ComponentMetadata | None = next(filter(lambda component: component["long_name"] == component_name, components_meta.components), None)
         if component_meta is None:
-                print("ERROR: object does not have component", component_name, context.object.name)
-                continue
-
-        item_type = get_selection_type(item)
-        item_name = item.name
+            print("ERROR: object does not have component", component_name)
+            continue
 
         # our whole row 
         box = layout.box() 
         row = box.row(align=True)
-
-        row.label(text="valid " + str(not component_meta.invalid))
 
         # "header"
         row.alert = component_meta.invalid
@@ -83,36 +74,36 @@ def draw_components(item, layout, settings: SPARROW_PG_Settings, registry: Compo
 
         # we fetch the matching ui property group
         
-        root_propertyGroup_name = registry.get_propertyGroupName_from_longName(component_name)                    
-        component_internal = component_name in INTERNAL_COMPONENTS
+        root_propertyGroup_name = registry.get_propertyGroupName_from_longName(component_name)  
+        if root_propertyGroup_name is None:
+            print("ERROR: object does not have component", component_name)
+            error_message = component_meta.invalid_details if component_meta.invalid else "Missing property group name"
+            row.label(text=error_message)
+            continue
 
-        if root_propertyGroup_name:
-            propertyGroup = getattr(component_meta, root_propertyGroup_name, None)
-            if propertyGroup:
-                # if the component has only 0 or 1 field names, display inline, otherwise change layout
-                single_field = len(propertyGroup.field_names) < 2
-                prop_group_location = box.row(align=True).column()
-                """if single_field:
-                    prop_group_location = row.column(align=True)#.split(factor=0.9)#layout.row(align=False)"""
-                
-                if component_meta.visible:
-                    if component_meta.invalid:
-
-                        error_message = component_meta.invalid_details if component_meta.invalid else "Missing component UI data, please reload registry !"
-                        prop_group_location.label(text=error_message)
-                    else:
-                        draw_propertyGroup(propertyGroup, prop_group_location, [root_propertyGroup_name], component_name, item_type, item_name, enabled=not component_internal)
-                else :
-                    row.label(text="details hidden, click on toggle to display")
-            else:
-                # print(">>>>>>>>>>>>>> Here invalid", component_meta.long_name)
-                error_message = component_meta.invalid_details if component_meta.invalid else "Missing component UI data, please reload registry !"
-                row.label(text=error_message)
-        else:
-            # print(">>>>>>>>>>>>>> Here invalid2", component_meta.long_name)
+        component_internal = component_name in INTERNAL_COMPONENTS        
+        propertyGroup = getattr(component_meta, root_propertyGroup_name, None)
+        
+        if propertyGroup is None:
             error_message = component_meta.invalid_details if component_meta.invalid else "Missing component UI data, please reload registry !"
             row.label(text=error_message)
+            continue
 
+        # if the component has only 0 or 1 field names, display inline, otherwise change layout
+        single_field = len(propertyGroup.field_names) < 2
+        prop_group_location = box.row(align=True).column()
+        """if single_field:
+            prop_group_location = row.column(align=True)#.split(factor=0.9)#layout.row(align=False)"""
+        
+        if component_meta.visible:
+            if component_meta.invalid:
+
+                error_message = component_meta.invalid_details if component_meta.invalid else "Missing component UI data, please reload registry !"
+                prop_group_location.label(text=error_message)
+            else:
+                draw_propertyGroup(propertyGroup, prop_group_location, [root_propertyGroup_name], component_name, item_type, item_name, enabled=not component_internal)
+        else :
+            row.label(text="details hidden, click on toggle to display")
 
         # "footer" with additional controls
         # if component_invalid:
@@ -127,17 +118,23 @@ def draw_components(item, layout, settings: SPARROW_PG_Settings, registry: Compo
 
         op = row.operator(SPARROW_OT_RemoveComponent.bl_idname, text="", icon="X")
         op.component_name = component_name
+        op.item_name = item_name
+        op.item_type = item_type
+
         row.separator()
         
         op = row.operator(SPARROW_OT_CopyComponent.bl_idname, text="", icon="COPYDOWN")
         op.source_component_name = component_name
-        op.source_object_name = item.name
+        op.source_item_name = item_name
+        op.source_item_type = item_type
         row.separator()
         
         #if not single_field:
         toggle_icon = "TRIA_DOWN" if component_meta.visible else "TRIA_RIGHT"
         op = row.operator(SPARROW_OT_ToggleComponentVisibility.bl_idname, text="", icon=toggle_icon)
         op.component_name = component_name
+        op.item_name = item_name
+        op.item_type = item_type
         #row.separator()
 
 def draw_propertyGroup( propertyGroup, layout, nesting =[], rootName=None, item_type="OBJECT", item_name="", enabled=True):
@@ -304,9 +301,6 @@ class SPARROW_PT_ObjectPanel(SPARROW_PT_Object, bpy.types.Panel):
     bl_idname = "SPARROW_PT_object"
     bl_label = "Bevy Components"
 
-    @classmethod
-    def poll(cls, context):
-        return context.object is not None
 
     def draw(self, context):
         layout = self.layout 
@@ -314,6 +308,22 @@ class SPARROW_PT_ObjectPanel(SPARROW_PT_Object, bpy.types.Panel):
         registry = bpy.context.window_manager.components_registry # type: ComponentsRegistry
         item  =  context.object
 
+        draw_components(item, layout, settings, registry)
+
+class SPARROW_PT_Collection:
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "collection"
+
+class SPARROW_PT_CollectionPanel(SPARROW_PT_Collection, bpy.types.Panel):
+    bl_idname = "SPARROW_PT_collection"
+    bl_label = "Bevy Components"
+
+    def draw(self, context):
+        layout = self.layout 
+        settings = bpy.context.window_manager.sparrow_settings # type: SPARROW_PG_Settings    
+        registry = bpy.context.window_manager.components_registry # type: ComponentsRegistry
+        item  =  context.collection        
         draw_components(item, layout, settings, registry)
 
       
@@ -332,7 +342,7 @@ class SPARROW_PT_OutputPanel(SPARROW_PT_Output, bpy.types.Panel):
         settings = bpy.context.window_manager.sparrow_settings # type: SPARROW_PG_Settings
 
         col = layout.column_flow(columns=1)
-        col.operator("sparrow.export_scenes", icon="RENDER_STILL", text="Export Scenes")
+        col.operator(SPARROW_OT_ExportScenes.bl_idname, icon="RENDER_STILL", text="Export Scenes")
         
         col.label(text="Scenes")
         box = col.box() 
@@ -357,6 +367,11 @@ class SPARROW_PT_OutputPanel(SPARROW_PT_Output, bpy.types.Panel):
         row.label(text="Registry File")
         row.prop(settings, "registry_file", text="")
         row.operator(SPARROW_OT_OpenRegistryFileBrowser.bl_idname, icon="FILE", text="")
+
+        row = box.row()
+        row.label(text="Format")
+        row.prop(settings, "gltf_format", text="")        
+
 
 
         row = box.row()

@@ -60,7 +60,7 @@ class SPARROW_PG_Settings(PropertyGroup):
         json_str = json.dumps({ 
             'registry_file': self.registry_file,
             'assets_path': self.assets_path,
-            #'last_scene': 
+            'gltf_format': self.gltf_format
         })
         # update or create the text datablock
         if SETTING_NAME in bpy.data.texts:
@@ -75,7 +75,7 @@ class SPARROW_PG_Settings(PropertyGroup):
         stored_settings = bpy.data.texts[SETTING_NAME] if SETTING_NAME in bpy.data.texts else None
         if stored_settings != None:
             settings =  json.loads(stored_settings.as_string())
-            for prop in ['assets_path', 'registry_file']:
+            for prop in ['assets_path', 'registry_file', 'gltf_format']:
                 if prop in settings:
                     setattr(self, prop, settings[prop])
 
@@ -143,7 +143,16 @@ class SPARROW_PG_Settings(PropertyGroup):
         update= save_settings,
         options={'HIDDEN'},
     ) # type: ignore
-
+    gltf_format: EnumProperty(
+        name="GLTF Format",
+        description="GLTF format",
+        items=[
+            ('GLB', 'glTF Binary (.glb)', 'Exports single file, with all data packed in binary form. Most efficient and protable, but more difficult to edit later'),
+            ('GLTF_SEPARATE', 'glTF Separate (.gltf + .bin + textures)', 'Exports multiple files, with separate JSON, binary and texture data. Easiest to edit later')
+        ],
+        update= save_settings,
+        default='GLTF_SEPARATE'
+    ) # type: ignore
     ## not saved
     # Last scene for collection instance edit
     last_scene:  PointerProperty(name="last scene", type=Scene, options= set())
@@ -166,7 +175,8 @@ class SPARROW_PG_Settings(PropertyGroup):
     components_dropdown: PointerProperty(type=SPARROW_PG_ComponentDropdown)  
     # selected component
     copied_source_component_name: StringProperty(default="")
-    copied_source_object: StringProperty(default="")
+    copied_source_item_name: StringProperty(default="")
+    copied_source_item_type: StringProperty(default="")
 
 #ComponentMetadata = SPARROW_PG_ComponentInstance
 class ComponentMetadata(PropertyGroup):
@@ -218,27 +228,25 @@ def property_group_from_infos(property_group_name, property_group_parameters):
 
 #Component_list
 class ComponentsMeta(PropertyGroup):
-    def add_component_to_ui_list(self, context, _):
-        settings: SPARROW_PG_Settings = bpy.context.window_manager.sparrow_settings
-        items = []
-
-        type_infos = settings.registry.type_infos
-        for long_name in settings.registry.type_infos.keys():
-            definition = settings.registry.type_infos[long_name]
-            short_name = definition["short_name"]
-            is_component = definition['is_component']  if "is_component" in definition else False
-            """if self.filter.lower() in short_name.lower() and is_component:"""
-            if is_component and not 'Handle' in short_name and not "Cow" in short_name and not "AssetId" in short_name and short_name not in HIDDEN_COMPONENTS: # FIXME: hard coded, seems wrong
-                items.append((long_name, short_name))
-        items.sort(key=lambda a: a[1])
-        return items
-    
-    infos_per_component:  StringProperty(
-        name="infos per component",
-        description="component"
-    ) # type: ignore
     components: bpy.props.CollectionProperty(type = ComponentMetadata)  # type: ignore
+    # def add_component_to_ui_list(self, context, _):
+    #     settings: SPARROW_PG_Settings = bpy.context.window_manager.sparrow_settings
+    #     items = []
 
+    #     type_infos = settings.registry.type_infos
+    #     for long_name in settings.registry.type_infos.keys():
+    #         definition = settings.registry.type_infos[long_name]
+    #         short_name = definition["short_name"]
+    #         is_component = definition['is_component']  if "is_component" in definition else False
+    #         """if self.filter.lower() in short_name.lower() and is_component:"""
+    #         if is_component and not 'Handle' in short_name and not "Cow" in short_name and not "AssetId" in short_name and short_name not in HIDDEN_COMPONENTS: # FIXME: hard coded, seems wrong
+    #             items.append((long_name, short_name))
+    #     items.sort(key=lambda a: a[1])
+    #     return items    
+    # infos_per_component:  StringProperty(
+    #     name="infos per component",
+    #     description="component"
+    # ) # type: ignore
 
 class SPARROW_PG_SceneProps(PropertyGroup):
     export: BoolProperty(name="Export", description="Automatically export scene as level", default = False, options = set()) # type: ignore
@@ -534,11 +542,15 @@ class ComponentsRegistry(PropertyGroup):
             components_metadata.remove(index)
         return True
 
-
     def upsert_component_in_item(self, item, long_name):
 
         # TODO: upsert this part too ?
-        target_components_metadata = item.components_meta.components
+        components_meta = getattr(item, "components_meta", None)
+        if components_meta is None:
+            print(f"ERROR: components_meta not found in item {item.name} {item.type}")
+            return (None, None)
+        
+        target_components_metadata = components_meta.components
         if target_components_metadata is None:
             print("ERROR: components_meta not found in item")
             return (None, None)
@@ -597,6 +609,34 @@ class ComponentsRegistry(PropertyGroup):
 
         return (component_meta, propertyGroup)
 
+    def copy_propertyGroup_values_to_another_item(self, source_item, target_item, component_name):
+
+
+        if source_item == None or target_item == None or component_name == None:
+            raise Exception('missing input data, cannot copy component propertryGroup')
+        
+        component_definition = self.find_component_definition_from_long_name(component_name)
+        property_group_name = self.get_propertyGroupName_from_longName(component_name)
+
+        source_components_metadata = source_item.components_meta.components
+        source_componentMeta = next(filter(lambda component: component["long_name"] == component_name, source_components_metadata), None)
+        # matching component means we already have this type of component 
+        source_propertyGroup = getattr(source_componentMeta, property_group_name)
+
+        print(f"copying {component_name} from {target_item}")
+        # now deal with the target item
+        (_, target_propertyGroup) = self.upsert_component_in_item(target_item, component_name)
+        
+        # add to item
+        value = self.property_group_value_to_custom_property_value(target_propertyGroup, component_definition, None)
+        upsert_bevy_component(target_item, component_name, value)
+
+        # copy the values over 
+        for field_name in source_propertyGroup.field_names:
+            if field_name in source_propertyGroup:
+                target_propertyGroup[field_name] = source_propertyGroup[field_name]
+        
+        self.apply_propertyGroup_values_to_item_customProperties(target_item)
 
     # to be able to give the user more feedback on any missin/unregistered types in their schema file
     def add_missing_typeInfo(self, long_name):
@@ -847,7 +887,6 @@ class ComponentsRegistry(PropertyGroup):
 
 
         return __annotations__
-
 
     def process_list(self, definition, update, nesting_long_names=[]):
         value_types_defaults = self.value_types_defaults 
@@ -1158,7 +1197,7 @@ class ComponentsRegistry(PropertyGroup):
         prefix_items = definition["prefix_items"] if "prefix_items" in definition else []
         long_name = definition["long_name"]
         
-        is_value_type = long_name in VALUE_TYPES_DEFAULTS
+        is_value_type = long_name in self.value_types_defaults
         nesting = nesting + [definition["short_name"]]
 
         if is_value_type:
@@ -1740,7 +1779,8 @@ class SPARROW_PG_Autobake(PropertyGroup):
 
     ab_gltf_format : EnumProperty(options = set(), name='Format', default='GLB', description='Output format', items=[
         ('GLB', 'glTF Binary (.glb)', 'Exports single file, with all data packed in binary form. Most efficient and protable, but more difficult to edit later'),
-        ('GLTF_SEPARATE', 'glTF Separate (.gltf + .bin + textures)', 'Exports multiple files, with separate JSON, binary and texture data. Easiest to edit later')]) # type: ignore
+        ('GLTF_SEPARATE', 'glTF Separate (.gltf + .bin + textures)', 'Exports multiple files, with separate JSON, binary and texture data. Easiest to edit later')
+    ]) # type: ignore
     ab_gltf_lighting : EnumProperty(options = set(), name='Lighting Mode', default='SPEC', description='Optional backwards compatibility for non-standard render engines. Applies to light', items=[
         ('SPEC', 'Standard', 'Physically-based glTF lighting units (cd, lx, nt)'),
         ('COMPAT', 'Unitless', 'Non-physical, unitless lighting. Useful when exposure controls are not available'),

@@ -28,7 +28,25 @@
 	"scene":0,
 	"scenes":[
 		{
-			"name":"Scene",
+			"extras":{
+				"autobake_properties":{},
+				"components_meta":{
+					"components":[
+						{
+							"short_name":"ItemType",
+							"long_name":"basic::ItemType",
+							"2D1CCE2570E8B0B90FE8F5DE6A487AA579243DE530FA6E98_ui":{
+								"selection":2
+							}
+						}
+					]
+				},
+				"sparrow_scene_props":{
+					"export":1
+				},
+				"bevy_components":"{\"basic::ItemType\": \"Object\"}"
+			},
+			"name":"Basic",
 			"nodes":[
 				0,
 				1,
@@ -39,7 +57,18 @@
 	"nodes":[
 		{
 			"extras":{
-				"custom_text":"Hello Bevy"
+				"bevy_components":"{\"basic::ItemType\": \"Object\"}",
+				"components_meta":{
+					"components":[
+						{
+							"short_name":"ItemType",
+							"long_name":"basic::ItemType",
+							"2D1CCE2570E8B0B90FE8F5DE6A487AA579243DE530FA6E98_ui":{
+								"selection":0
+							}
+						}
+					]
+				}
 			},
 			"mesh":0,
 			"name":"Cube"
@@ -49,6 +78,9 @@
 				"KHR_lights_punctual":{
 					"light":0
 				}
+			},
+			"extras":{
+				"components_meta":{}
 			},
 			"name":"Light",
 			"rotation":[
@@ -65,6 +97,12 @@
 		},
 		{
 			"camera":0,
+			"extras":{
+				"components_meta":{
+					"components":[]
+				},
+				"bevy_components":"{}"
+			},
 			"name":"Camera",
 			"rotation":[
 				-0.20997299253940582,
@@ -188,7 +226,7 @@
 	"buffers":[
 		{
 			"byteLength":840,
-			"uri": "basic.bin"
+			"uri":"Basic.bin"
 		}
 	]
 }

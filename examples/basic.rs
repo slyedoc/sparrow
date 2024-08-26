@@ -2,15 +2,17 @@
 mod helpers;
 
 use bevy::prelude::*;
+use sparrow::SparrowPlugin; 
+
 use bevy_asset_loader::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use sickle_ui::{prelude::*, SickleUiPlugin};
-use sparrow::SparrowPlugin; 
+use serde::{Deserialize, Serialize};
 
 #[derive(AssetCollection, Resource)]
 pub struct GameAssets {
-    #[asset(path = "scenes/basic.gltf#Scene0")]
-    pub part2: Handle<Scene>,
+    #[asset(path = "scenes/Basic.gltf#Scene0")]
+    pub basic: Handle<Scene>,
 }
 
 #[derive(States, Debug, Default, Clone, Hash, Eq, PartialEq, Reflect)]
@@ -36,14 +38,16 @@ fn main() {
         .add_systems(PreStartup, pre_setup)
         .add_systems(OnEnter(AppState::Playing), setup)
         .add_systems(PostUpdate, todo_on_scene_spawn)
+        .add_systems(Update, print_item_type_added)
+        .register_type::<ItemType>()
         .run();
 }
 
 fn setup(mut commands: Commands, game_assets: Res<GameAssets>) {
     commands.spawn((
-        Name::new("Scene: part2"),
+        Name::new("Scene: basic"),
         SceneBundle {
-            scene: game_assets.part2.clone(),
+            scene: game_assets.basic.clone(),
             ..default()
         },
     ));
@@ -90,4 +94,27 @@ fn pre_setup(mut commands: Commands) {
             },
         )
         .insert(Name::new("UI Root"));
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Reflect)]
+#[reflect(Component)]
+pub enum ItemType {
+    Object,   
+    Collection,
+    Scene,
+}
+
+fn print_item_type_added(
+    query: Query<(Entity, &ItemType, Option<&Name>), Added<ItemType>>,
+) {
+    for (entity, item_type, name) in query.iter() {
+        if let Some(name) = name {
+            println!(
+                "Added {:?} to {} with name {:?}",
+                item_type, entity, name
+            );
+        } else {
+            println!("Added {:?} to {:?}", item_type, entity);
+        }
+    }
 }

@@ -242,6 +242,19 @@
       "type": "array",
       "type_info": "List"
     },
+    "basic::ItemType": {
+      "is_component": true,
+      "is_resource": false,
+      "long_name": "basic::ItemType",
+      "one_of": [
+        "Object",
+        "Collection",
+        "Scene"
+      ],
+      "short_name": "ItemType",
+      "type": "string",
+      "type_info": "Enum"
+    },
     "bevy_animation::AnimationClip": {
       "additional_properties": false,
       "is_component": false,

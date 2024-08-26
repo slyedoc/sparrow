@@ -26,6 +26,7 @@ def update_calback_helper(definition: TypeInfo, update, component_name_override)
 def update_component(self, context, definition: TypeInfo, component_name):
     registry = bpy.context.window_manager.components_registry
     
+    current_object_or_collection = get_selected_item(context)
     # get selected object or collection:
     item = None
     object = context.object
@@ -35,6 +36,7 @@ def update_component(self, context, definition: TypeInfo, component_name):
         item = object
     elif collection is not None:
         item = collection     
+    
 
     #print("updating component", component_name, item.name)      
     

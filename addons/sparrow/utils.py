@@ -10,57 +10,18 @@ from bpy.props import (BoolProperty, StringProperty, CollectionProperty, IntProp
 INTERNAL_COMPONENTS = ['BlueprintInfos', 'blenvy::blueprints::materials::MaterialInfos']
 HIDDEN_COMPONENTS = ['Parent', 'Children']
 
-BLENDER_PROPERTY_MAPPING = {
-    "bool": dict(type=BoolProperty, presets=dict()),
+ITEM_TYPES =(
+    ('OBJECT', "Object", ""),
+    ('COLLECTION', "Collection", ""),
+    #('MESH', "Mesh", ""),
+    #('MATERIAL', "Material", ""),
+    ('SCENE', "Scene", ""),
+)
 
-    "u8": dict(type=IntProperty, presets=dict(min=0, max=255)),
-    "u16": dict(type=IntProperty, presets=dict(min=0, max=65535)),
-    "u32": dict(type=IntProperty, presets=dict(min=0)),
-    "u64": dict(type=IntProperty, presets=dict(min=0)),
-    "u128": dict(type=IntProperty, presets=dict(min=0)),
-    "u64": dict(type=IntProperty, presets=dict(min=0)),
-    "usize": dict(type=IntProperty, presets=dict(min=0)),
-
-    "i8": dict(type=IntProperty, presets=dict()),
-    "i16":dict(type=IntProperty, presets=dict()),
-    "i32":dict(type=IntProperty, presets=dict()),
-    "i64":dict(type=IntProperty, presets=dict()),
-    "i128":dict(type=IntProperty, presets=dict()),
-    "isize": dict(type=IntProperty, presets=dict()),
-
-    "f32": dict(type=FloatProperty, presets=dict()),
-    "f64": dict(type=FloatProperty, presets=dict()),
-
-    "glam::Vec2": {"type": FloatVectorProperty, "presets": dict(size = 2) },
-    "glam::DVec2": {"type": FloatVectorProperty, "presets": dict(size = 2) },
-    "glam::UVec2": {"type": FloatVectorProperty, "presets": dict(size = 2) },
-
-    "glam::Vec3": {"type": FloatVectorProperty, "presets": {"size":3} },
-    "glam::Vec3A":{"type": FloatVectorProperty, "presets": {"size":3} },
-    "glam::DVec3":{"type": FloatVectorProperty, "presets": {"size":3} },
-    "glam::UVec3":{"type": FloatVectorProperty, "presets": {"size":3} },
-
-    "glam::Vec4": {"type": FloatVectorProperty, "presets": {"size":4} },
-    "glam::Vec4A": {"type": FloatVectorProperty, "presets": {"size":4} },
-    "glam::DVec4": {"type": FloatVectorProperty, "presets": {"size":4} },
-    "glam::UVec4":{"type": FloatVectorProperty, "presets": {"size":4, "min":0.0} },
-
-    "glam::Quat": {"type": FloatVectorProperty, "presets": {"size":4} },
-
-    "bevy_render::color::Color": dict(type = FloatVectorProperty, presets=dict(subtype='COLOR', size=4)),
-
-    "char": dict(type=StringProperty, presets=dict()),
-    "str":  dict(type=StringProperty, presets=dict()),
-    "alloc::string::String":  dict(type=StringProperty, presets=dict()),
-    "alloc::borrow::Cow<str>": dict(type=StringProperty, presets=dict()),
-
-
-    "enum":  dict(type=EnumProperty, presets=dict()), 
-
-    'bevy_ecs::entity::Entity': {"type": IntProperty, "presets": {"min":0} },
-    'bevy_utils::Uuid':  dict(type=StringProperty, presets=dict()),
-
-}
+GLTF_FORMAT = (
+    ('GLB', 'glTF Binary (.glb)', 'Exports single file, with all data packed in binary form. Most efficient and protable, but more difficult to edit later'),
+    ('GLTF_SEPARATE', 'glTF Separate (.gltf + .bin + textures)', 'Exports multiple files, with separate JSON, binary and texture data. Easiest to edit later')
+),
 
 VALUE_TYPES_DEFAULTS = {
     "string":" ",
@@ -112,7 +73,6 @@ VALUE_TYPES_DEFAULTS = {
 
     'bevy_ecs::entity::Entity': 0,#4294967295, # this is the same as Bevy's Entity::Placeholder, too big for Blender..sigh
     'bevy_utils::Uuid': '"'+str(uuid.uuid4())+'"'
-
 }
 
 TYPE_MAPPINGS = {
@@ -346,6 +306,7 @@ def remove_bevy_component(item, long_name):
 ###################################################################
 # Selection Type Functions
 
+
 def get_selected_item(context):
     selection = None
 
@@ -403,9 +364,12 @@ def get_selection_type(selection):
         return 'OBJECT'
     if isinstance(selection, bpy.types.Collection):
         return 'COLLECTION'
+    if isinstance(selection, bpy.types.Scene):
+        return 'SCENE'
 
 def get_item_by_type(item_type, item_name):
     item = None
+    print(f"item type: {item_type} {item_name}")
     if item_type == 'OBJECT':
         item = bpy.data.objects[item_name]
     elif item_type == 'COLLECTION':
@@ -414,6 +378,8 @@ def get_item_by_type(item_type, item_name):
         item = bpy.data.meshes[item_name]
     elif item_type == 'MATERIAL':
         item = bpy.data.materials[item_name]
+    elif item_type == 'SCENE':
+        item = bpy.data.scenes[item_name]
     return item
 
 #------------------------------------------------------------------------------------

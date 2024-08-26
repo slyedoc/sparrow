@@ -180,10 +180,10 @@ def unregister():
     del bpy.types.WindowManager.sparrow_settings
     del bpy.types.Scene.sparrow_scene_props
 
+    del bpy.types.Scene.components_meta
     del bpy.types.Object.components_meta
     del bpy.types.Collection.components_meta
-    del bpy.types.Mesh.components_meta 
-    del bpy.types.Material.components_meta
+
 
     # from autobake
     del bpy.types.Scene.autobake_properties

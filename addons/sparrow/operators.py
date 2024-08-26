@@ -104,9 +104,9 @@ class SPARROW_OT_ExportScenes(Operator):
     bl_label = "Export Scense"         # Display name in the interface.
     bl_options = {'REGISTER', 'UNDO'}  # Enable undo for the operator.
 
-    def execute(self, context):          
+    def execute(self, context):       
         settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings  
-        p = os.path.join(settings.assets_path, SCENE_FOLDER)
+        p = os.path.join(settings.assets_path, SCENE_FOLDER)        
         if not os.path.exists(p):
             print(f"ERROR: Scene folder does not exist: {p}")
             return {'CANCELLED'}
@@ -116,20 +116,26 @@ class SPARROW_OT_ExportScenes(Operator):
 
             if scene_props.export:                                
                 gltf_path = os.path.abspath(os.path.join(p, scene.name))
-                print(f"Exporting {scene.name} to {gltf_path + '.glb'}")
+                print(f"Exporting {scene.name} to {gltf_path + '.'}")
                 tmp_time = time.time()
-                export_scene(scene, {}, gltf_path) #{'export_materials': 'PLACEHOLDER'}
+
+                export_scene(scene, {
+                    'filepath': gltf_path,
+                    'export_format': settings.gltf_format,
+                }) #{'export_materials': 'PLACEHOLDER'}
                 print(f"exported {scene.name} in {time.time() - tmp_time:6.2f}s")
 
         return {'FINISHED'}            # Lets Blender know the operator finished successfully.
 
+
 # export scene to gltf with io_scene_gltf
-def export_scene(scene: bpy.types.Scene, settings: Dict[str, Any], gltf_output_path: str):
+def export_scene(scene: bpy.types.Scene, settings: Dict[str, Any]):
+    # expect settings to have filepath and export_format set
+
     #https://docs.blender.org/api/current/bpy.ops.export_scene.html#bpy.ops.export_scene.gltf        
     export_settings = dict(   
         **settings,
-        filepath = gltf_output_path,
-        
+
         #log_info=False, # limit the output, was blowing up my console        
         check_existing=False,
 
@@ -277,19 +283,17 @@ class SPARROW_OT_AddComponent(Operator):
     target_item_type: EnumProperty(
         name="target item type",
         description="type of the object/collection/mesh/material to add the component to",
-        items=(
-            ('OBJECT', "Object", ""),
-            ('COLLECTION', "Collection", ""),
-            ('MESH', "Mesh", ""),
-            ('MATERIAL', "Material", ""),
-            ),
+        items=ITEM_TYPES,
         default="OBJECT"
     ) # type: ignore
 
     def execute(self, context):
+        registry: ComponentsRegistry = context.window_manager.components_registry
+
+
         if self.target_item_name == "" or self.target_item_type == "":
             target_item = get_selected_item(context)
-            print("adding component ", self.component_type, "to target  '"+target_item.name+"'")
+            print(f"adding  component {self.component_type}, to target {self.target_item_type} - {target_item.name}")
         else:
             target_item = get_item_by_type(self.target_item_type, self.target_item_name)
             print("adding component ", self.component_type, "to target  '"+target_item.name+"'")
@@ -299,7 +303,7 @@ class SPARROW_OT_AddComponent(Operator):
             type_infos = context.window_manager.components_registry.type_infos
             component_definition = type_infos[self.component_type]
             component_value = self.component_value if self.component_value != "" else None
-            add_component_to_item(target_item, component_definition, value=component_value)
+            registry.add_component_to_item(target_item, component_definition, value=component_value)
 
         return {'FINISHED'}
 
@@ -310,54 +314,38 @@ class SPARROW_OT_PasteComponent(Operator):
     bl_label = "Paste component to object Operator"
     bl_options = {"UNDO"}
 
+    target_item_name: StringProperty(
+        name="target item name",
+        description="name of the object/collection/mesh/material to add the component to",
+    ) # type: ignore
+
+    target_item_type: EnumProperty(
+        name="target item type",
+        description="type of the object/collection/mesh/material to add the component to",
+        items=ITEM_TYPES,
+        default="OBJECT"
+    ) # type: ignore
+
     def execute(self, context):
         settings: SPARROW_PG_Settings = bpy.context.window_manager.sparrow_settings
         registry: ComponentsRegistry = bpy.context.window_manager.components_registry
 
-        source_object_name = settings.copied_source_object
-        source_object = bpy.data.objects.get(source_object_name, None)
-
-        if source_object == None:
+        source_item_name = settings.copied_source_item_name
+        source_item_type = settings.copied_source_item_type
+        source_item = get_item_by_type(source_item_type, source_item_name)
+        print("HEEEERRE", source_item_name, source_item_type, source_item)
+        if source_item is None:
             self.report({"ERROR"}, "The source object to copy a component from does not exist")
-            return {'CANCELLED'}
-        
-        if context.object == None:
-            self.report({"ERROR"}, "The object to paste a component to does not exist")
-            return {'CANCELLED'}
-                
-        component_name = settings.copied_source_component_name
-        if component_name == None:
-            self.report({"ERROR"}, "The component to paste does not exist")
-            return {'CANCELLED'}
-
-        component_value = get_bevy_component_value_by_long_name(source_object, component_name)
-        if component_value is None:
-            self.report({"ERROR"}, "The source component to copy from does not exist")
-            return {'CANCELLED'}
-
-        component_definition = registry.type_infos.get(component_name, None)
-        property_group_name = registry.long_names_to_propgroup_names.get(component_name, None)
-        
-        # matching component means we already have this type of component 
-        source_component_instance: ComponentMetadata = next(filter(lambda component: component["long_name"] == component_name, source_object.components_meta.components), None)
-        source_propertyGroup = getattr(source_component_instance, property_group_name)
-        print(f"source_component_instance: {source_component_instance.long_name}: {source_propertyGroup.name}")
-
-
-        # TODO: looks like we are doing the same thing twice, once
-        # now deal with the target object
-        (_, target_propertyGroup) = registry.upsert_component_in_item(context.object, component_name)
-        # add to object
-        value = registry.property_group_value_to_custom_property_value(target_propertyGroup, component_definition, None)
-        upsert_bevy_component(context.object, component_name, value)
-
-        # copy the values over 
-        for field_name in source_propertyGroup.field_names:
-            if field_name in source_propertyGroup:
-                target_propertyGroup[field_name] = source_propertyGroup[field_name]
-
-        bpy.ops.object.refresh_custom_properties()
-        registry.apply_propertyGroup_values_to_object_customProperties(context.object)
+        else:
+            component_name = settings.copied_source_component_name
+            component_value = get_bevy_component_value_by_long_name(source_item, component_name)
+            if component_value is None:
+                self.report({"ERROR"}, "The source component to copy from does not exist")
+            else:
+                print("pasting component to item:", source_item, "component name:", str(component_name), "component value:" + str(component_value))
+                registry = context.window_manager.components_registry
+                target_item = get_selected_item(context)
+                registry.copy_propertyGroup_values_to_another_item(source_item, target_item, component_name)
 
         return {'FINISHED'}
 
@@ -372,16 +360,22 @@ class SPARROW_OT_CopyComponent(Operator):
         description="name of the component to copy",
     ) # type: ignore
 
-    source_object_name: StringProperty(
+    source_item_name: StringProperty(
+        name="source object name",
+        description="name of the object to copy the component from",
+    ) # type: ignore
+    source_item_type: StringProperty(
         name="source object name",
         description="name of the object to copy the component from",
     ) # type: ignore
 
+
     def execute(self, context):
         settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings
-        if self.source_component_name != '' and self.source_object_name != "":
+        if self.source_component_name != '' and self.source_item_name != "":
             settings.copied_source_component_name = self.source_component_name
-            settings.copied_source_object = self.source_object_name
+            settings.copied_source_item_name = self.source_item_name
+            settings.copied_source_item_type = self.source_item_type
         else:
             self.report({"ERROR"}, "The source object name / component name to copy a component from have not been specified")
 
@@ -398,28 +392,45 @@ class SPARROW_OT_RemoveComponent(Operator):
         description="component to delete",
     ) # type: ignore
 
-    object_name: StringProperty(
+    item_name: StringProperty(
         name="object name",
         description="object whose component to delete",
         default=""
     ) # type: ignore
 
+    item_type : EnumProperty(
+        name="item type",
+        description="type of the item to select: object or collection",
+        items=ITEM_TYPES,
+        default="OBJECT"
+    ) # type: ignore
     def execute(self, context):
         registry: ComponentsRegistry = context.window_manager.components_registry
-        if self.object_name == "":
-            object = context.object
+        target = None
+        if self.item_name == "":
+            self.report({"ERROR"}, "The target to remove ("+ self.component_name +") from does not exist")
         else:
-            object = bpy.data.objects[self.object_name]
-        print("removing component ", self.component_name, "from object  '"+object.name+"'")
+            target = get_item_by_type(self.item_type, self.item_name)
 
-        if object is not None and 'bevy_components' in object :
-            component_value = get_bevy_component_value_by_long_name(object, self.component_name)
-            if component_value is not None:
-                registry.remove_component_from_item(object, self.component_name)
-            else :
-                self.report({"ERROR"}, "The component to remove ("+ self.component_name +") does not exist")
+        print("removing component ", self.component_name, "from object  '"+target.name+"'")
+
+
+        if target is not None:
+            if 'bevy_components' in target:
+                component_value = get_bevy_component_value_by_long_name(target, self.component_name)
+                if component_value is not None:
+                    registry.remove_component_from_item(target, self.component_name)
+                else :
+                    self.report({"ERROR"}, "The component to remove ("+ self.component_name +") does not exist")
+            else:
+                # for the classic "custom properties"
+                if self.component_name in target:
+                    del target[self.component_name]
+                else:
+                    self.report({"ERROR"}, "The component to remove ("+ self.component_name +") does not exist")
+
         else: 
-            self.report({"ERROR"}, "The object to remove ("+ self.component_name +") from does not exist")
+            self.report({"ERROR"}, "The target to remove ("+ self.component_name +") from does not exist")
         return {'FINISHED'}
 
 class SPARROW_OT_ToggleComponentVisibility(bpy.types.Operator):
@@ -431,10 +442,25 @@ class SPARROW_OT_ToggleComponentVisibility(bpy.types.Operator):
     component_name: StringProperty(
         name="component name",
         description="component to toggle",
+    ) # type: ignore    
+    item_name: StringProperty(
+        name="source object name",
+        description="name of the object to copy the component from",
+    ) # type: ignore
+    item_type: StringProperty(
+        name="source object name",
+        description="name of the object to copy the component from",
     ) # type: ignore
 
+
     def execute(self, context):
-        components = next(filter(lambda component: component["long_name"] == self.component_name, context.object.components_meta.components), None)
+        registry: ComponentsRegistry = context.window_manager.components_registry
+        item = get_item_by_type(self.item_type, self.item_name)
+        if item is None:
+            self.report({"ERROR"}, "The target to toggle ("+ self.component_name +") from does not exist")
+            return {'CANCELLED'}
+
+        components = next(filter(lambda component: component["long_name"] == self.component_name, item.components_meta.components), None)
         if components != None: 
             components.visible = not components.visible
         return {'FINISHED'}
