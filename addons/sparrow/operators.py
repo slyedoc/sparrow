@@ -18,29 +18,27 @@ from bpy.props import (StringProperty, BoolProperty, IntProperty, FloatProperty,
 from bpy.types import (Panel, Operator, PropertyGroup, UIList, Menu)
 
 from .utils import *
-from .utils import export_texture
-from .utils import obj_bake_ready
 
 def edit_collection_menu(self, context):    
-    self.layout.operator(EditCollectionInstance.bl_idname, text="Edit Collection Instance")
+    self.layout.operator(SPARROW_OT_EditCollectionInstance.bl_idname, text="Edit Collection Instance")
 
-class EditCollectionInstance(Operator):
+class SPARROW_OT_EditCollectionInstance(Operator):
     """Goto Collection Instance Scene and isolate it"""
     bl_idname = "object.edit_collection_instance"
     bl_label = "Edit Instanced Collection"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):  
-        sparrow: SPARROW_PG_Global = context.window_manager.sparrow_global         
-        sparrow.last_scene = None
-        coll = bpy.context.active_object.instance_collection #type: bpy.types.Collection
+        settings: SPARROW_PG_Settings = context.window_manager.sparrow_settings         
+        settings.last_scene = None
+        coll = bpy.context.active_object.instance_collection
 
         if not coll:    
             self.report({"WARNING"}, "Active item is not a collection instance")
             return {"CANCELLED"}
         
         # Save the current scene so we can return to it later
-        sparrow.last_scene = bpy.context.scene
+        settings.last_scene = bpy.context.scene
 
         # Find the scene that contains this collection and go to it       
         target_scene = None
@@ -65,7 +63,8 @@ class EditCollectionInstance(Operator):
             bpy.context.view_layer.objects.active = root_obj
 
             # Trigger Local View (isolation mode) to isolate the selected object
-            # Hotkey for this is / (forward slash) and is a toggle
+            # Hotkey for this is / (forward slash) and is a toggle, 
+            # this way you can see rest of the scene if needed
             bpy.ops.view3d.localview()
             # Zoom to the selected object
             bpy.ops.view3d.view_selected()
@@ -76,9 +75,9 @@ class EditCollectionInstance(Operator):
         return {"FINISHED"}
 
 def exit_collection_instance(self, context):    
-    self.layout.operator(ExitCollectionInstance.bl_idname, text="Exit Collection Instance")
+    self.layout.operator(SPARROW_OT_ExitCollectionInstance.bl_idname, text="Exit Collection Instance")
     
-class ExitCollectionInstance(Operator):    
+class SPARROW_OT_ExitCollectionInstance(Operator):    
      """Exit current scene and return to the previous scene"""
      bl_idname = "object.exit_collection_instance"
      bl_label = "Exit Collection Instance"
@@ -99,23 +98,23 @@ class ExitCollectionInstance(Operator):
 
         return {'FINISHED'}
 
-class ExportScenes(Operator):
+class SPARROW_OT_ExportScenes(Operator):
     """Export Enabled Scenes"""      # Use this as a tooltip for menu items and buttons.
     bl_idname = "sparrow.export_scenes"        # Unique identifier for buttons and menu items to reference.
     bl_label = "Export Scense"         # Display name in the interface.
     bl_options = {'REGISTER', 'UNDO'}  # Enable undo for the operator.
 
     def execute(self, context):          
-        settings = bpy.context.window_manager.sparrow_global # type: SPARROW_PG_Global      
+        settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings  
         p = os.path.join(settings.assets_path, SCENE_FOLDER)
         if not os.path.exists(p):
             print(f"ERROR: Scene folder does not exist: {p}")
             return {'CANCELLED'}
 
         for scene in bpy.data.scenes:
-            scene_settings: SPARROW_PG_Scene = scene.sparrow_scene
+            scene_props: SPARROW_PG_SceneProps = scene.sparrow_scene_props
 
-            if scene_settings.export:                                
+            if scene_props.export:                                
                 gltf_path = os.path.abspath(os.path.join(p, scene.name))
                 print(f"Exporting {scene.name} to {gltf_path + '.glb'}")
                 tmp_time = time.time()
@@ -138,7 +137,6 @@ def export_scene(scene: bpy.types.Scene, settings: Dict[str, Any], gltf_output_p
         export_hierarchy_full_collections=False,
         export_hierarchy_flatten_objs=False, # note: breakes any collection hierarchy
 
-
         export_apply=True, # prevents exporting shape keys
         export_cameras=True,
         export_extras=True, # For custom exported properties.
@@ -149,7 +147,6 @@ def export_scene(scene: bpy.types.Scene, settings: Dict[str, Any], gltf_output_p
         export_animation_mode='ACTIONS',
         export_gn_mesh=True,
         export_attributes=True,
-
 
         # use only one of these at a time
         use_active_collection_with_nested=False,
@@ -194,18 +191,19 @@ def recurLayerCollection(layerColl, collName):
             return found
 
 
-class LoadRegistry(Operator):
+
+class SPARROW_OT_LoadRegistry(Operator):
     """Load the registry file"""
     bl_idname = "sparrow.load_registry"
     bl_label = "Load Registry"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
-        settings = bpy.context.window_manager.sparrow_global # type: SPARROW_PG_Global
+        settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings  
         settings.load_registry()
         return {'FINISHED'}
 
-class OT_OpenAssetsFolderBrowser(Operator, ImportHelper):
+class SPARROW_OT_OpenAssetsFolderBrowser(Operator, ImportHelper):
     """Assets folder's browser"""
     bl_idname = "sparrow.open_folderbrowser" 
     bl_label = "Select folder" 
@@ -230,11 +228,11 @@ class OT_OpenAssetsFolderBrowser(Operator, ImportHelper):
     
     def execute(self, context): 
         """Do something with the selected file(s)."""
-        settings = bpy.context.window_manager.sparrow_global # type: SPARROW_PG_Global
+        settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings  
         setattr(settings, self.target_property, self.directory)
         return {'FINISHED'}
 
-class OT_OpenRegistryFileBrowser(Operator, ImportHelper):
+class SPARROW_OT_OpenRegistryFileBrowser(Operator, ImportHelper):
     """Browse for registry json file"""
     bl_idname = "sparrow.open_registryfilebrowser" 
     bl_label = "Open the file browser" 
@@ -246,10 +244,405 @@ class OT_OpenRegistryFileBrowser(Operator, ImportHelper):
     
     def execute(self, context): 
         """Do something with the selected file(s)."""
-        sparrow = context.window_manager.sparrow_global # type: SPARROW_PG_Global
-        sparrow.registry_file = self.filepath
-        sparrow.load_registry()       
+        settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings  
+        settings.registry_file = self.filepath
+        settings.load_registry()
         return {'FINISHED'}
+
+
+# adds a component to an item (including metadata) using the provided component definition & optional value
+
+
+class SPARROW_OT_AddComponent(Operator):
+    """Add Bevy component"""
+    bl_idname = "sparrow.add_component"
+    bl_label = "Add component to object/collection"
+    bl_options = {"UNDO"}
+
+    component_type: StringProperty(
+        name="component_type",
+        description="component type to add",
+    ) # type: ignore
+
+    component_value: StringProperty(
+        name="component_value",
+        description="value of the newly added component"
+    ) # type: ignore
+
+    target_item_name: StringProperty(
+        name="target item name",
+        description="name of the object/collection/mesh/material to add the component to",
+    ) # type: ignore
+
+    target_item_type: EnumProperty(
+        name="target item type",
+        description="type of the object/collection/mesh/material to add the component to",
+        items=(
+            ('OBJECT', "Object", ""),
+            ('COLLECTION', "Collection", ""),
+            ('MESH', "Mesh", ""),
+            ('MATERIAL', "Material", ""),
+            ),
+        default="OBJECT"
+    ) # type: ignore
+
+    def execute(self, context):
+        if self.target_item_name == "" or self.target_item_type == "":
+            target_item = get_selected_item(context)
+            print("adding component ", self.component_type, "to target  '"+target_item.name+"'")
+        else:
+            target_item = get_item_by_type(self.target_item_type, self.target_item_name)
+            print("adding component ", self.component_type, "to target  '"+target_item.name+"'")
+
+        has_component_type = self.component_type != ""
+        if has_component_type and target_item is not None:
+            type_infos = context.window_manager.components_registry.type_infos
+            component_definition = type_infos[self.component_type]
+            component_value = self.component_value if self.component_value != "" else None
+            add_component_to_item(target_item, component_definition, value=component_value)
+
+        return {'FINISHED'}
+
+
+class SPARROW_OT_PasteComponent(Operator):
+    """Paste Bevy component to object"""
+    bl_idname = "object.paste_bevy_component"
+    bl_label = "Paste component to object Operator"
+    bl_options = {"UNDO"}
+
+    def execute(self, context):
+        settings: SPARROW_PG_Settings = bpy.context.window_manager.sparrow_settings
+        registry: ComponentsRegistry = bpy.context.window_manager.components_registry
+
+        source_object_name = settings.copied_source_object
+        source_object = bpy.data.objects.get(source_object_name, None)
+
+        if source_object == None:
+            self.report({"ERROR"}, "The source object to copy a component from does not exist")
+            return {'CANCELLED'}
+        
+        if context.object == None:
+            self.report({"ERROR"}, "The object to paste a component to does not exist")
+            return {'CANCELLED'}
+                
+        component_name = settings.copied_source_component_name
+        if component_name == None:
+            self.report({"ERROR"}, "The component to paste does not exist")
+            return {'CANCELLED'}
+
+        component_value = get_bevy_component_value_by_long_name(source_object, component_name)
+        if component_value is None:
+            self.report({"ERROR"}, "The source component to copy from does not exist")
+            return {'CANCELLED'}
+
+        component_definition = registry.type_infos.get(component_name, None)
+        property_group_name = registry.long_names_to_propgroup_names.get(component_name, None)
+        
+        # matching component means we already have this type of component 
+        source_component_instance: ComponentMetadata = next(filter(lambda component: component["long_name"] == component_name, source_object.components_meta.components), None)
+        source_propertyGroup = getattr(source_component_instance, property_group_name)
+        print(f"source_component_instance: {source_component_instance.long_name}: {source_propertyGroup.name}")
+
+
+        # TODO: looks like we are doing the same thing twice, once
+        # now deal with the target object
+        (_, target_propertyGroup) = registry.upsert_component_in_item(context.object, component_name)
+        # add to object
+        value = registry.property_group_value_to_custom_property_value(target_propertyGroup, component_definition, None)
+        upsert_bevy_component(context.object, component_name, value)
+
+        # copy the values over 
+        for field_name in source_propertyGroup.field_names:
+            if field_name in source_propertyGroup:
+                target_propertyGroup[field_name] = source_propertyGroup[field_name]
+
+        bpy.ops.object.refresh_custom_properties()
+        registry.apply_propertyGroup_values_to_object_customProperties(context.object)
+
+        return {'FINISHED'}
+
+class SPARROW_OT_CopyComponent(Operator):
+    """Copy Bevy component from object"""
+    bl_idname = "object.copy_bevy_component"
+    bl_label = "Copy component Operator"
+    bl_options = {"UNDO"}
+
+    source_component_name: StringProperty(
+        name="source component_name (long)",
+        description="name of the component to copy",
+    ) # type: ignore
+
+    source_object_name: StringProperty(
+        name="source object name",
+        description="name of the object to copy the component from",
+    ) # type: ignore
+
+    def execute(self, context):
+        settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings
+        if self.source_component_name != '' and self.source_object_name != "":
+            settings.copied_source_component_name = self.source_component_name
+            settings.copied_source_object = self.source_object_name
+        else:
+            self.report({"ERROR"}, "The source object name / component name to copy a component from have not been specified")
+
+        return {'FINISHED'}
+
+class SPARROW_OT_RemoveComponent(Operator):
+    """Remove Bevy component from object"""
+    bl_idname = "object.remove_bevy_component"
+    bl_label = "Remove component from object Operator"
+    bl_options = {"UNDO"}
+
+    component_name: StringProperty(
+        name="component name",
+        description="component to delete",
+    ) # type: ignore
+
+    object_name: StringProperty(
+        name="object name",
+        description="object whose component to delete",
+        default=""
+    ) # type: ignore
+
+    def execute(self, context):
+        registry: ComponentsRegistry = context.window_manager.components_registry
+        if self.object_name == "":
+            object = context.object
+        else:
+            object = bpy.data.objects[self.object_name]
+        print("removing component ", self.component_name, "from object  '"+object.name+"'")
+
+        if object is not None and 'bevy_components' in object :
+            component_value = get_bevy_component_value_by_long_name(object, self.component_name)
+            if component_value is not None:
+                registry.remove_component_from_item(object, self.component_name)
+            else :
+                self.report({"ERROR"}, "The component to remove ("+ self.component_name +") does not exist")
+        else: 
+            self.report({"ERROR"}, "The object to remove ("+ self.component_name +") from does not exist")
+        return {'FINISHED'}
+
+class SPARROW_OT_ToggleComponentVisibility(bpy.types.Operator):
+    """Toggle Bevy component's visibility"""
+    bl_idname = "object.toggle_bevy_component_visibility"
+    bl_label = "Toggle component visibility"
+    bl_options = {"UNDO"}
+
+    component_name: StringProperty(
+        name="component name",
+        description="component to toggle",
+    ) # type: ignore
+
+    def execute(self, context):
+        components = next(filter(lambda component: component["long_name"] == self.component_name, context.object.components_meta.components), None)
+        if components != None: 
+            components.visible = not components.visible
+        return {'FINISHED'}
+
+
+class SPARROW_OT_components_refresh_custom_properties_all(Operator):
+    """Apply registry to ALL objects: update the custom property values of all objects based on their definition, if any"""
+    bl_idname = "object.refresh_custom_properties_all" # Update SPARROW_PG_Settings::load_registry if you change this
+    bl_label = "Apply Registry to all objects"
+    bl_options = {"UNDO"}
+
+    @classmethod
+    def register(cls):
+        bpy.types.WindowManager.custom_properties_from_components_progress_all = bpy.props.FloatProperty(default=-1.0)
+
+    @classmethod
+    def unregister(cls):
+        del bpy.types.WindowManager.custom_properties_from_components_progress_all
+
+    def execute(self, context):
+
+        registry: ComponentsRegistry = context.window_manager.components_registry
+
+        total = len(bpy.data.objects)
+
+
+        for index, object in enumerate(bpy.data.objects):
+            registry.apply_propertyGroup_values_to_item_customProperties(object)
+
+            progress = index / total
+            #print(f"refreshing custom properties for {total}: {progress} {object.name}")
+
+            context.window_manager.custom_properties_from_components_progress_all = progress
+            # now force refresh the ui
+            bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+        context.window_manager.custom_properties_from_components_progress_all = -1.0
+
+        return {'FINISHED'}
+    
+
+
+class Generic_LIST_OT_AddItem(Operator): 
+    """Add a new item to the list.""" 
+    bl_idname = "generic_list.add_item" 
+    bl_label = "Add a new item" 
+
+    property_group_path: StringProperty(
+        name="property group path",
+        description="",
+    ) # type: ignore
+
+    component_name: StringProperty(
+        name="component name",
+        description="",
+    ) # type: ignore
+
+    def execute(self, context): 
+        print("")
+        object = context.object
+        # information is stored in component meta
+        components_in_object = object.components_meta.components
+        component_meta =  next(filter(lambda component: component["long_name"] == self.component_name, components_in_object), None)
+
+        propertyGroup = component_meta
+        for path_item in json.loads(self.property_group_path):
+            propertyGroup = getattr(propertyGroup, path_item)
+
+        print("list container", propertyGroup, dict(propertyGroup))
+        target_list = getattr(propertyGroup, "list")
+        index = getattr(propertyGroup, "list_index")
+        item = target_list.add()
+        propertyGroup.list_index = index + 1 # we use this to force the change detection
+
+        print("added item", item, item.field_names, getattr(item, "field_names"))
+        print("")
+        return{'FINISHED'}
+    
+
+class Generic_LIST_OT_RemoveItem(Operator): 
+    """Remove an item to the list.""" 
+    bl_idname = "generic_list.remove_item" 
+    bl_label = "Remove selected item" 
+
+    property_group_path: StringProperty(
+        name="property group path",
+        description="",
+    ) # type: ignore
+
+    component_name: StringProperty(
+        name="component name",
+        description="",
+    ) # type: ignore
+    def execute(self, context): 
+        print("remove from list", context.object)
+
+        object = context.object
+        # information is stored in component meta
+        components_in_object = object.components_meta.components
+        component_meta =  next(filter(lambda component: component["long_name"] == self.component_name, components_in_object), None)
+
+        propertyGroup = component_meta
+        for path_item in json.loads(self.property_group_path):
+            propertyGroup = getattr(propertyGroup, path_item)
+
+        target_list = getattr(propertyGroup, "list")
+        index = getattr(propertyGroup, "list_index")
+        target_list.remove(index)
+        propertyGroup.list_index = min(max(0, index - 1), len(target_list) - 1) 
+        return{'FINISHED'}
+
+
+class Generic_LIST_OT_SelectItem(Operator): 
+    """Remove an item to the list.""" 
+    bl_idname = "generic_list.select_item" 
+    bl_label = "select an item" 
+
+
+    property_group_path: StringProperty(
+        name="property group path",
+        description="",
+    ) # type: ignore
+
+    component_name: StringProperty(
+        name="component name",
+        description="",
+    ) # type: ignore
+
+    selection_index: IntProperty() # type: ignore
+
+    def execute(self, context): 
+        print("select in list", context.object)
+
+        object = context.object
+        # information is stored in component meta
+        components_in_object = object.components_meta.components
+        component_meta =  next(filter(lambda component: component["long_name"] == self.component_name, components_in_object), None)
+
+        propertyGroup = component_meta
+        for path_item in json.loads(self.property_group_path):
+            propertyGroup = getattr(propertyGroup, path_item)
+
+        target_list = getattr(propertyGroup, "list")
+        index = getattr(propertyGroup, "list_index")
+
+        propertyGroup.list_index = self.selection_index
+        return{'FINISHED'}
+
+
+class GENERIC_LIST_OT_actions(Operator):
+    """Move items up and down, add and remove"""
+    bl_idname = "generic_list.list_action"
+    bl_label = "List Actions"
+    bl_description = "Move items up and down, add and remove"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    action: EnumProperty(
+        items=(
+            ('UP', "Up", ""),
+            ('DOWN', "Down", ""),
+            ('REMOVE', "Remove", ""),
+            ('ADD', "Add", ""))) # type: ignore
+    
+    property_group_path: StringProperty(
+        name="property group path",
+        description="",
+    ) # type: ignore
+
+    component_name: StringProperty(
+        name="component name",
+        description="",
+    ) # type: ignore
+
+    def invoke(self, context, event):
+        object = context.object
+        # information is stored in component meta
+        components_in_object = object.components_meta.components
+        component_meta =  next(filter(lambda component: component["long_name"] == self.component_name, components_in_object), None)
+
+        propertyGroup = component_meta
+        for path_item in json.loads(self.property_group_path):
+            propertyGroup = getattr(propertyGroup, path_item)
+
+        target_list = getattr(propertyGroup, "list")
+        index = getattr(propertyGroup, "list_index")
+
+
+        if self.action == 'DOWN' and index < len(target_list) - 1:
+            #item_next = scn.rule_list[index + 1].name
+            target_list.move(index, index + 1)
+            propertyGroup.list_index += 1
+        
+        elif self.action == 'UP' and index >= 1:
+            #item_prev = scn.rule_list[index - 1].name
+            target_list.move(index, index - 1)
+            propertyGroup.list_index -= 1
+
+        elif self.action == 'REMOVE':
+            target_list.remove(index)
+            propertyGroup.list_index = min(max(0, index - 1), len(target_list) - 1) 
+
+        if self.action == 'ADD':
+            item = target_list.add()
+            propertyGroup.list_index = index + 1 # we use this to force the change detection
+            #info = '"%s" added to list' % (item.name)
+            #self.report({'INFO'}, info)
+
+        return {"FINISHED"}
+
 
 #------------------------------------------------------------------------------------
 #   Below here is from AutoBake

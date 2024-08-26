@@ -21,6 +21,280 @@ class SPARROW_PT_CollectionPanel(SPARROW_PT_Collection, bpy.types.Panel):
         row = col.row(align=True)
         row.label(text="Testing")
 
+def draw_components(item, layout, settings: SPARROW_PG_Settings, registry: ComponentsRegistry):
+    if item is None:
+        layout.label(text ="Select an object to edit its components")
+        return
+
+    if registry.has_type_infos() is None:
+        layout.label(text ="No registry loaded, please load a registry file")
+        return
+    
+    components_meta: ComponentsMeta = item.components_meta
+    if components_meta is None:
+        layout.label(text ="No components found")
+        return
+
+    col = layout.column()
+    row = col.row()
+    row.prop(settings.components_dropdown, "list", text="")
+    
+
+    op = row.operator(SPARROW_OT_AddComponent.bl_idname, text="Add", icon="ADD")
+    op.component_type = settings.components_dropdown.list
+    row.enabled = settings.components_dropdown.list != ''
+    
+    layout.separator()
+
+    col = layout.column_flow(columns=2)
+    row = col.row(align=True)        
+    row.prop(settings.components_dropdown, "filter", text="Filter")
+    
+    # row = col.row(align=True)
+    # op = row.operator(SPARROW_OT_components_refresh_custom_properties_all.bl_idname, text="Refresh", icon="SYNTAX_ON")
+    
+    row =  col.row(align=True)
+    row.operator(SPARROW_OT_PasteComponent.bl_idname, text="Paste component ("+settings.copied_source_component_name+")", icon="PASTEDOWN")
+    row.enabled = registry.has_type_infos() and settings.copied_source_object != ''
+
+    layout.separator()
+
+    bevy_components = get_bevy_components(item)
+    for component_name in sorted(bevy_components): # sorted by component name, practical
+
+        component_meta: ComponentMetadata = next(filter(lambda component: component["long_name"] == component_name, components_meta.components), None)
+        if component_meta is None:
+                print("ERROR: object does not have component", component_name, context.object.name)
+                continue
+
+        item_type = get_selection_type(item)
+        item_name = item.name
+
+        # our whole row 
+        box = layout.box() 
+        row = box.row(align=True)
+
+        row.label(text="valid " + str(not component_meta.invalid))
+
+        # "header"
+        row.alert = component_meta.invalid
+        row.prop(component_meta, "enabled", text="")
+        row.label(text=component_name)
+
+        # we fetch the matching ui property group
+        
+        root_propertyGroup_name = registry.get_propertyGroupName_from_longName(component_name)                    
+        component_internal = component_name in INTERNAL_COMPONENTS
+
+        if root_propertyGroup_name:
+            propertyGroup = getattr(component_meta, root_propertyGroup_name, None)
+            if propertyGroup:
+                # if the component has only 0 or 1 field names, display inline, otherwise change layout
+                single_field = len(propertyGroup.field_names) < 2
+                prop_group_location = box.row(align=True).column()
+                """if single_field:
+                    prop_group_location = row.column(align=True)#.split(factor=0.9)#layout.row(align=False)"""
+                
+                if component_meta.visible:
+                    if component_meta.invalid:
+
+                        error_message = component_meta.invalid_details if component_meta.invalid else "Missing component UI data, please reload registry !"
+                        prop_group_location.label(text=error_message)
+                    else:
+                        draw_propertyGroup(propertyGroup, prop_group_location, [root_propertyGroup_name], component_name, item_type, item_name, enabled=not component_internal)
+                else :
+                    row.label(text="details hidden, click on toggle to display")
+            else:
+                # print(">>>>>>>>>>>>>> Here invalid", component_meta.long_name)
+                error_message = component_meta.invalid_details if component_meta.invalid else "Missing component UI data, please reload registry !"
+                row.label(text=error_message)
+        else:
+            # print(">>>>>>>>>>>>>> Here invalid2", component_meta.long_name)
+            error_message = component_meta.invalid_details if component_meta.invalid else "Missing component UI data, please reload registry !"
+            row.label(text=error_message)
+
+
+        # "footer" with additional controls
+        # if component_invalid:
+        #     if root_propertyGroup_name:
+        #         propertyGroup = getattr(component_meta, root_propertyGroup_name, None)
+        #         if propertyGroup:
+        #             unit_struct = len(propertyGroup.field_names) == 0
+        #             if unit_struct: 
+        #                 op = row.operator(Fix_Component_Operator.bl_idname, text="", icon="SHADERFX")
+        #                 op.component_name = component_name
+        #                 row.separator()
+
+        op = row.operator(SPARROW_OT_RemoveComponent.bl_idname, text="", icon="X")
+        op.component_name = component_name
+        row.separator()
+        
+        op = row.operator(SPARROW_OT_CopyComponent.bl_idname, text="", icon="COPYDOWN")
+        op.source_component_name = component_name
+        op.source_object_name = item.name
+        row.separator()
+        
+        #if not single_field:
+        toggle_icon = "TRIA_DOWN" if component_meta.visible else "TRIA_RIGHT"
+        op = row.operator(SPARROW_OT_ToggleComponentVisibility.bl_idname, text="", icon=toggle_icon)
+        op.component_name = component_name
+        #row.separator()
+
+def draw_propertyGroup( propertyGroup, layout, nesting =[], rootName=None, item_type="OBJECT", item_name="", enabled=True):
+    is_enum = getattr(propertyGroup, "with_enum")
+    is_list = getattr(propertyGroup, "with_list") 
+    is_map = getattr(propertyGroup, "with_map")
+    # item in our components hierarchy can get the correct propertyGroup by STRINGS because of course, we cannot pass objects to operators...sigh
+
+    # if it is an enum, the first field name is always the list of enum variants, the others are the variants
+    field_names = propertyGroup.field_names
+    layout.enabled = enabled
+    #print("")
+    #print("drawing", propertyGroup, nesting, "component_name", rootName)
+    if is_enum:
+        subrow = layout.row()
+        display_name = field_names[0] if propertyGroup.tupple_or_struct == "struct" else ""
+        subrow.prop(propertyGroup, field_names[0], text=display_name)
+        subrow.separator()
+        selection = getattr(propertyGroup, "selection")
+
+        for fname in field_names[1:]:
+            if fname == "variant_" + selection:
+                subrow = layout.row()
+                display_name = fname if propertyGroup.tupple_or_struct == "struct" else ""
+
+                nestedPropertyGroup = getattr(propertyGroup, fname)
+                nested = getattr(nestedPropertyGroup, "nested", False)
+                #print("nestedPropertyGroup", nestedPropertyGroup, fname, nested)
+                if nested:
+                    draw_propertyGroup(nestedPropertyGroup, subrow.column(), nesting + [fname], rootName, item_type, item_name, enabled=enabled )
+                # if an enum variant is not a propertyGroup
+                break
+    elif is_list:
+        item_list = getattr(propertyGroup, "list")
+        list_index = getattr(propertyGroup, "list_index")
+        box = layout.box()
+        split = box.split(factor=0.9)
+        box.enabled = enabled
+        list_column, buttons_column = (split.column(),split.column())
+
+        list_column = list_column.box()
+        for index, item  in enumerate(item_list):
+            row = list_column.row()
+            draw_propertyGroup(item, row, nesting, rootName, item_type, enabled=enabled)
+            icon = 'CHECKBOX_HLT' if list_index == index else 'CHECKBOX_DEHLT'
+            op = row.operator('blenvy.component_list_actions', icon=icon, text="")
+            op.action = 'SELECT'
+            op.component_name = rootName
+            op.property_group_path = json.dumps(nesting)
+            op.selection_index = index
+            op.item_type = item_type
+            op.item_name = item_name
+
+        #various control buttons
+        buttons_column.separator()
+        row = buttons_column.row()
+        op = row.operator('blenvy.component_list_actions', icon='ADD', text="")
+        op.action = 'ADD'
+        op.component_name = rootName
+        op.property_group_path = json.dumps(nesting)
+        op.item_type = item_type
+        op.item_name = item_name
+
+        row = buttons_column.row()
+        op = row.operator('blenvy.component_list_actions', icon='REMOVE', text="")
+        op.action = 'REMOVE'
+        op.component_name = rootName
+        op.property_group_path = json.dumps(nesting)
+        op.item_type = item_type
+        op.item_name = item_name
+
+        buttons_column.separator()
+        row = buttons_column.row()
+        op = row.operator('blenvy.component_list_actions', icon='TRIA_UP', text="")
+        op.action = 'UP'
+        op.component_name = rootName
+        op.property_group_path = json.dumps(nesting)
+        op.item_type = item_type
+        op.item_name = item_name
+
+
+        row = buttons_column.row()
+        op = row.operator('blenvy.component_list_actions', icon='TRIA_DOWN', text="")
+        op.action = 'DOWN'
+        op.component_name = rootName
+        op.property_group_path = json.dumps(nesting)
+        op.item_type = item_type
+        op.item_name = item_name
+
+
+    elif is_map:
+        root = layout.row().column()
+        if hasattr(propertyGroup, "list"): # TODO: improve handling of non drawable UI
+            keys_list = getattr(propertyGroup, "list")
+            values_list = getattr(propertyGroup, "values_list")
+            box = root.box()
+            row = box.row()
+            row.label(text="Add entry:")
+            keys_setter = getattr(propertyGroup, "keys_setter")
+            draw_propertyGroup(keys_setter, row, nesting, rootName, item_type, item_name, enabled=enabled)
+
+            values_setter = getattr(propertyGroup, "values_setter")
+            draw_propertyGroup(values_setter, row, nesting, rootName, item_type, item_name, enabled=enabled)
+
+            op = row.operator('blenvy.component_map_actions', icon='ADD', text="")
+            op.action = 'ADD'
+            op.component_name = rootName
+            op.property_group_path = json.dumps(nesting)
+            op.item_type = item_type
+            op.item_name = item_name
+
+            box = root.box()
+            split = box.split(factor=0.9)
+            list_column, buttons_column = (split.column(),split.column())
+            list_column = list_column.box()
+
+            for index, item  in enumerate(keys_list):
+                row = list_column.row()
+                draw_propertyGroup(item, row, nesting, rootName, item_type, item_name, enabled=enabled)
+
+                value = values_list[index]
+                draw_propertyGroup(value, row, nesting, rootName, item_type, item_name, enabled=enabled)
+
+                op = row.operator('blenvy.component_map_actions', icon='REMOVE', text="")
+                op.action = 'REMOVE'
+                op.component_name = rootName
+                op.property_group_path = json.dumps(nesting)
+                op.target_index = index
+                op.item_type = item_type
+                op.item_name = item_name
+
+            #various control buttons
+            buttons_column.separator()
+            row = buttons_column.row()
+        
+
+    else: 
+        for fname in field_names:
+            #subrow = layout.row()
+            nestedPropertyGroup = getattr(propertyGroup, fname)
+            nested = getattr(nestedPropertyGroup, "nested", False)
+            display_name = fname if propertyGroup.tupple_or_struct == "struct" else ""
+
+            if nested:
+                layout.separator()
+                layout.separator()
+
+                layout.label(text=display_name) #  this is the name of the field/sub field
+                layout.separator()
+                subrow = layout.row()
+                draw_propertyGroup(nestedPropertyGroup, subrow, nesting + [fname], rootName, item_type, item_name, enabled )
+            else:
+                subrow = layout.row()
+                subrow.prop(propertyGroup, fname, text=display_name)
+                subrow.separator()
+
+
 class SPARROW_PT_Object:
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
@@ -30,12 +304,19 @@ class SPARROW_PT_ObjectPanel(SPARROW_PT_Object, bpy.types.Panel):
     bl_idname = "SPARROW_PT_object"
     bl_label = "Bevy Components"
 
-    def draw(self, context):
-        layout = self.layout     
-        col = layout.column_flow(columns=1)
-        row = col.row(align=True)
-        row.label(text="Testing")
+    @classmethod
+    def poll(cls, context):
+        return context.object is not None
 
+    def draw(self, context):
+        layout = self.layout 
+        settings = bpy.context.window_manager.sparrow_settings # type: SPARROW_PG_Settings    
+        registry = bpy.context.window_manager.components_registry # type: ComponentsRegistry
+        item  =  context.object
+
+        draw_components(item, layout, settings, registry)
+
+      
 class SPARROW_PT_Output:
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
@@ -48,7 +329,7 @@ class SPARROW_PT_OutputPanel(SPARROW_PT_Output, bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         #scene = context.scene
-        settings = bpy.context.window_manager.sparrow_global # type: SPARROW_PG_Global
+        settings = bpy.context.window_manager.sparrow_settings # type: SPARROW_PG_Settings
 
         col = layout.column_flow(columns=1)
         col.operator("sparrow.export_scenes", icon="RENDER_STILL", text="Export Scenes")
@@ -58,8 +339,8 @@ class SPARROW_PT_OutputPanel(SPARROW_PT_Output, bpy.types.Panel):
    
         for scene in bpy.data.scenes:       ## new 
             row = box.row(align=True)            
-            scene_settings = scene.sparrow_scene
-            row.prop(scene_settings, "export", text=scene.name)   ## changed
+            scene_props = scene.sparrow_scene_props
+            row.prop(scene_props, "export", text=scene.name)   ## changed
 
         col.separator()
         
@@ -69,17 +350,17 @@ class SPARROW_PT_OutputPanel(SPARROW_PT_Output, bpy.types.Panel):
         row = box.row()
         row.label(text="Assets Folder")
         row.prop(settings, "assets_path", text="")
-        folder_selector = row.operator(OT_OpenAssetsFolderBrowser.bl_idname, icon="FILE_FOLDER", text="")
+        folder_selector = row.operator(SPARROW_OT_OpenAssetsFolderBrowser.bl_idname, icon="FILE_FOLDER", text="")
         folder_selector.target_property = "assets_path"
 
         row = box.row()
         row.label(text="Registry File")
         row.prop(settings, "registry_file", text="")
-        row.operator(OT_OpenRegistryFileBrowser.bl_idname, icon="FILE", text="")
+        row.operator(SPARROW_OT_OpenRegistryFileBrowser.bl_idname, icon="FILE", text="")
 
 
         row = box.row()
-        row.operator(LoadRegistry.bl_idname, text="Reload Registry")
+        row.operator(SPARROW_OT_LoadRegistry.bl_idname, text="Reload Registry")
         
         #folder_selector = row.operator(ReloadRegistryOperator.bl_idname, icon="FILE_FOLDER", text="")
         #folder_selector.target_property = "assets_path"
@@ -93,12 +374,14 @@ class SPARROW_PT_ScenePanel(SPARROW_PT_Scene, bpy.types.Panel):
     bl_idname = "SPARROW_PT_scene"
     bl_label = "Bevy Components"
 
-    def draw(self, context):
-        layout = self.layout
+    def draw(self, context):       
 
-        col = layout.column_flow(columns=1)
-        row = col.row(align=True)
-        row.label(text="Testing")
+        layout = self.layout 
+        settings = bpy.context.window_manager.sparrow_settings # type: SPARROW_PG_Settings    
+        registry = bpy.context.window_manager.components_registry # type: ComponentsRegistry
+        item  =  context.scene
+
+        draw_components(item, layout, settings, registry)
 
 class SPARROW_PT_Main:
     bl_space_type = 'PROPERTIES'

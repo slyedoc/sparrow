@@ -38,7 +38,6 @@ import functools
 
 from bpy.app.handlers import persistent
 
-
 from bpy.props import (StringProperty, BoolProperty, IntProperty, FloatProperty, EnumProperty, PointerProperty, CollectionProperty)
 from bpy.types import (Panel, Operator, PropertyGroup, UIList, Menu)
 
@@ -49,26 +48,39 @@ from .operators import *
 from .ui_lists import *
 from .menu import *
 
-
-
 classes = [
     # Operators
-    ExportScenes,
-    EditCollectionInstance,
-    ExitCollectionInstance,
-    OT_OpenAssetsFolderBrowser,
-    OT_OpenRegistryFileBrowser,
-    LoadRegistry,
+    SPARROW_OT_ExportScenes,
+    SPARROW_OT_EditCollectionInstance,
+    SPARROW_OT_ExitCollectionInstance,
+    SPARROW_OT_OpenAssetsFolderBrowser,
+    SPARROW_OT_OpenRegistryFileBrowser,
+    SPARROW_OT_LoadRegistry,
+    SPARROW_OT_AddComponent,    
+    SPARROW_OT_PasteComponent,
+    SPARROW_OT_CopyComponent,
+    SPARROW_OT_RemoveComponent,
+    SPARROW_OT_ToggleComponentVisibility,
+    SPARROW_OT_components_refresh_custom_properties_all,
 
-    # Properties
-    SPARROW_PG_ComponentInfo,
-    SPARROW_PG_Global,
+    Generic_LIST_OT_AddItem,
+    Generic_LIST_OT_RemoveItem,
+    Generic_LIST_OT_SelectItem,
+    GENERIC_LIST_OT_actions,
 
-    SPARROW_PG_ComponentInstance,
-    SPARROW_PG_Scene,
-    SPARROW_PG_Object,
-    SPARROW_PG_Collect,
-  
+    # Scene, Object, Collection Properties
+    ComponentMetadata, 
+    ComponentsMeta,
+    
+    MissingBevyType,
+    ComponentsRegistry,
+
+    # Global Properties
+    SPARROW_PG_SceneProps,
+    SPARROW_PG_Component,    
+    SPARROW_PG_ComponentDropdown,
+    SPARROW_PG_Settings,
+
 
     # Properties
     SPARROW_PG_Autobake, SPARROW_PG_Bake, SPARROW_PG_BakeQueue, SPARROW_PG_UDIMType, SPARROW_PG_SourceObjects, SPARROW_PG_ImageExport, SPARROW_PG_ObjectQueue,
@@ -86,7 +98,6 @@ classes = [
     SPARROW_MT_BakeList, SPARROW_MT_UDIMList, SPARROW_MT_ItemEdit, SPARROW_MT_ItemEdit_UDIM, SPARROW_MT_Confirms, SPARROW_MT_Alerts, SPARROW_MT_ColorSpace, SPARROW_MT_StartPopupSettings,SPARROW_MT_Reports,
 
     # Panels
-    
     SPARROW_PT_ObjectPanel, SPARROW_PT_CollectionPanel, SPARROW_PT_OutputPanel, SPARROW_PT_ScenePanel,
 
     # Auto Bake Panels
@@ -99,21 +110,26 @@ classes = [
 
 @persistent
 def post_load(file_name):
-    sparrow = bpy.context.window_manager.sparrow_global # type: SPARROW_PG_Global    
-    sparrow.load_settings()
-    sparrow.load_registry()
+    settings = bpy.context.window_manager.sparrow_settings # type: SPARROW_PG_Settings    
+    settings.load_settings()
+    settings.load_registry()
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
     # Global settings
-    bpy.types.WindowManager.sparrow_global = bpy.props.PointerProperty(type=SPARROW_PG_Global)
+    bpy.types.WindowManager.sparrow_settings = bpy.props.PointerProperty(type=SPARROW_PG_Settings)
+    bpy.types.Scene.sparrow_scene_props = bpy.props.PointerProperty(type=SPARROW_PG_SceneProps)
 
+    bpy.types.Scene.components_meta = PointerProperty(type=ComponentsMeta)
+    bpy.types.Object.components_meta = PointerProperty(type=ComponentsMeta)
+    bpy.types.Collection.components_meta = PointerProperty(type=ComponentsMeta)
+    #bpy.types.Mesh.components_meta = PointerProperty(type=ComponentsMeta)
+    #bpy.types.Material.components_meta = PointerProperty(type=ComponentsMeta)
 
-    bpy.types.Scene.sparrow_scene = bpy.props.PointerProperty(type=SPARROW_PG_Scene)
-    bpy.types.Object.sparrow_object = bpy.props.PointerProperty(type=SPARROW_PG_Object)
-    bpy.types.Collection.sparrow_collection = bpy.props.PointerProperty(type=SPARROW_PG_Collect)
+    # handled in classmethod
+    #bpy.types.WindowManager.components_registry = PointerProperty(type=ComponentsRegistry)
 
     # from autobake
     bpy.types.Scene.autobake_properties = PointerProperty(type=SPARROW_PG_Autobake)
@@ -152,25 +168,22 @@ def unregister():
     if bpy.app.timers.is_registered(watch_registry):
         bpy.app.timers.unregister(watch_registry)
 
-    bpy.app.handlers.load_post.append(post_load)
+    bpy.app.handlers.load_post.remove(post_load)
 
     bpy.types.VIEW3D_MT_object.remove(edit_collection_menu)
     bpy.types.VIEW3D_MT_object_context_menu.remove(edit_collection_menu)
 
     bpy.types.VIEW3D_MT_object.remove(exit_collection_instance)
     bpy.types.VIEW3D_MT_object_context_menu.remove(exit_collection_instance)
-
-    for cls in reversed(classes):    
-        try:               
-            bpy.utils.unregister_class(cls)
-        except RuntimeError as e:
-            print(f"Failed to unregister {cls.__name__}, Error: {e}")
-            pass
-
-    del bpy.types.Scene.sparrow
-    del bpy.types.WindowManager.sparrow
-
     
+
+    del bpy.types.WindowManager.sparrow_settings
+    del bpy.types.Scene.sparrow_scene_props
+
+    del bpy.types.Object.components_meta
+    del bpy.types.Collection.components_meta
+    del bpy.types.Mesh.components_meta 
+    del bpy.types.Material.components_meta
 
     # from autobake
     del bpy.types.Scene.autobake_properties

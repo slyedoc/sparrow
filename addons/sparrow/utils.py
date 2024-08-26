@@ -1,11 +1,420 @@
+import json
 import os
 import re
 from typing import Any
 import bpy
+import uuid
+
+from bpy.props import (BoolProperty, StringProperty, CollectionProperty, IntProperty, PointerProperty, EnumProperty, FloatProperty,FloatVectorProperty )
+
+INTERNAL_COMPONENTS = ['BlueprintInfos', 'blenvy::blueprints::materials::MaterialInfos']
+HIDDEN_COMPONENTS = ['Parent', 'Children']
+
+BLENDER_PROPERTY_MAPPING = {
+    "bool": dict(type=BoolProperty, presets=dict()),
+
+    "u8": dict(type=IntProperty, presets=dict(min=0, max=255)),
+    "u16": dict(type=IntProperty, presets=dict(min=0, max=65535)),
+    "u32": dict(type=IntProperty, presets=dict(min=0)),
+    "u64": dict(type=IntProperty, presets=dict(min=0)),
+    "u128": dict(type=IntProperty, presets=dict(min=0)),
+    "u64": dict(type=IntProperty, presets=dict(min=0)),
+    "usize": dict(type=IntProperty, presets=dict(min=0)),
+
+    "i8": dict(type=IntProperty, presets=dict()),
+    "i16":dict(type=IntProperty, presets=dict()),
+    "i32":dict(type=IntProperty, presets=dict()),
+    "i64":dict(type=IntProperty, presets=dict()),
+    "i128":dict(type=IntProperty, presets=dict()),
+    "isize": dict(type=IntProperty, presets=dict()),
+
+    "f32": dict(type=FloatProperty, presets=dict()),
+    "f64": dict(type=FloatProperty, presets=dict()),
+
+    "glam::Vec2": {"type": FloatVectorProperty, "presets": dict(size = 2) },
+    "glam::DVec2": {"type": FloatVectorProperty, "presets": dict(size = 2) },
+    "glam::UVec2": {"type": FloatVectorProperty, "presets": dict(size = 2) },
+
+    "glam::Vec3": {"type": FloatVectorProperty, "presets": {"size":3} },
+    "glam::Vec3A":{"type": FloatVectorProperty, "presets": {"size":3} },
+    "glam::DVec3":{"type": FloatVectorProperty, "presets": {"size":3} },
+    "glam::UVec3":{"type": FloatVectorProperty, "presets": {"size":3} },
+
+    "glam::Vec4": {"type": FloatVectorProperty, "presets": {"size":4} },
+    "glam::Vec4A": {"type": FloatVectorProperty, "presets": {"size":4} },
+    "glam::DVec4": {"type": FloatVectorProperty, "presets": {"size":4} },
+    "glam::UVec4":{"type": FloatVectorProperty, "presets": {"size":4, "min":0.0} },
+
+    "glam::Quat": {"type": FloatVectorProperty, "presets": {"size":4} },
+
+    "bevy_render::color::Color": dict(type = FloatVectorProperty, presets=dict(subtype='COLOR', size=4)),
+
+    "char": dict(type=StringProperty, presets=dict()),
+    "str":  dict(type=StringProperty, presets=dict()),
+    "alloc::string::String":  dict(type=StringProperty, presets=dict()),
+    "alloc::borrow::Cow<str>": dict(type=StringProperty, presets=dict()),
 
 
+    "enum":  dict(type=EnumProperty, presets=dict()), 
+
+    'bevy_ecs::entity::Entity': {"type": IntProperty, "presets": {"min":0} },
+    'bevy_utils::Uuid':  dict(type=StringProperty, presets=dict()),
+
+}
+
+VALUE_TYPES_DEFAULTS = {
+    "string":" ",
+    "boolean": True,
+    "float": 0.0,
+    "uint": 0,
+    "int":0,
+
+    # todo : we are re-doing the work of the bevy /rust side here, but it seems more pratical to alway look for the same field name on the blender side for matches
+    "bool": True,
+
+    "u8": 0,
+    "u16":0,
+    "u32":0,
+    "u64":0,
+    "u128":0,
+    "usize":0,
+
+    "i8": 0,
+    "i16":0,
+    "i32":0,
+    "i64":0,
+    "i128":0,
+    "isize":0,
+
+    "f32": 0.0,
+    "f64":0.0,
+
+    "char": " ",
+    "str": " ",
+    "alloc::string::String": " ",
+    "alloc::borrow::Cow<str>":  " ",
+
+    "glam::Vec2": [0.0, 0.0],
+    "glam::DVec2":  [0.0, 0.0],
+    "glam::UVec2": [0, 0],
+
+    "glam::Vec3": [0.0, 0.0, 0.0],
+    "glam::Vec3A":[0.0, 0.0, 0.0],
+    "glam::UVec3": [0, 0, 0],
+
+    "glam::Vec4": [0.0, 0.0, 0.0, 0.0], 
+    "glam::DVec4": [0.0, 0.0, 0.0, 0.0], 
+    "glam::UVec4": [0, 0, 0, 0], 
+
+    "glam::Quat":  [0.0, 0.0, 0.0, 0.0], 
+
+    "bevy_render::color::Color": [1.0, 1.0, 0.0, 1.0],
+
+    'bevy_ecs::entity::Entity': 0,#4294967295, # this is the same as Bevy's Entity::Placeholder, too big for Blender..sigh
+    'bevy_utils::Uuid': '"'+str(uuid.uuid4())+'"'
+
+}
+
+TYPE_MAPPINGS = {
+    "bool": lambda value: True if value == "true" else False,
+
+    "u8": lambda value: int(value),
+    "u16": lambda value: int(value),
+    "u32": lambda value: int(value),
+    "u64": lambda value: int(value),
+    "u128": lambda value: int(value),
+    "u64": lambda value: int(value),
+    "usize": lambda value: int(value),
+
+    "i8": lambda value: int(value),
+    "i16": lambda value: int(value),
+    "i32": lambda value: int(value),
+    "i64": lambda value: int(value),
+    "i128": lambda value: int(value),
+    "isize": lambda value: int(value),
+
+    'f32': lambda value: float(value),
+    'f64': lambda value: float(value),
+
+    "glam::Vec2": lambda value: parse_vec2(value, float, "Vec2"),
+    "glam::DVec2": lambda value: parse_vec2(value, float, "DVec2"),
+    "glam::UVec2": lambda value: parse_vec2(value, to_int, "UVec2"),
+
+    'glam::Vec3': lambda value: parse_vec3(value, float, "Vec3"),
+    "glam::Vec3A": lambda value: parse_vec3(value, float, "Vec3A"),
+    "glam::UVec3": lambda value: parse_vec3(value, to_int, "UVec3"),
+
+    "glam::Vec4": lambda value: parse_vec4(value, float, "Vec4"),
+    "glam::DVec4": lambda value: parse_vec4(value, float, "DVec4"),
+    "glam::UVec4": lambda value: parse_vec4(value, to_int, "UVec4"),
+
+    "glam::Quat": lambda value: parse_vec4(value, float, "Quat"),
+
+    'alloc::string::String': lambda value: str(value.replace('"', "")),
+    'alloc::borrow::Cow<str>': lambda value: str(value.replace('"', "")),
+
+    'bevy_render::color::Color': lambda value: parse_color(value, float, "Rgba"),
+    'bevy_ecs::entity::Entity': lambda value: int(value),
+}
+
+CONVERSION_TABLES = {
+    "bool": lambda value: value,
+
+    "char": lambda value: '"'+value+'"',
+    "str": lambda value: '"'+value+'"',
+    "alloc::string::String": lambda value: '"'+str(value)+'"',
+    "alloc::borrow::Cow<str>": lambda value: '"'+str(value)+'"',
+
+    "glam::Vec2": lambda value: "Vec2(x:"+str(value[0])+ ", y:"+str(value[1])+")",
+    "glam::DVec2": lambda value: "DVec2(x:"+str(value[0])+ ", y:"+str(value[1])+")",
+    "glam::UVec2": lambda value: "UVec2(x:"+str(value[0])+ ", y:"+str(value[1])+")",
+
+    "glam::Vec3": lambda value: "Vec3(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+")",
+    "glam::Vec3A": lambda value: "Vec3A(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+")",
+    "glam::UVec3": lambda value: "UVec3(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+")",
+
+    "glam::Vec4": lambda value: "Vec4(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+ ", w:"+str(value[3])+")",
+    "glam::DVec4": lambda value: "DVec4(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+ ", w:"+str(value[3])+")",
+    "glam::UVec4": lambda value: "UVec4(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+ ", w:"+str(value[3])+")",
+
+    "glam::Quat":  lambda value: "Quat(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+ ", w:"+str(value[3])+")",
+
+    "bevy_render::color::Color": lambda value: "Rgba(red:"+str(value[0])+ ", green:"+str(value[1])+ ", blue:"+str(value[2])+ ", alpha:"+str(value[3])+   ")",
+}
+
+def is_def_value_type(definition):
+    if definition == None:
+        return True    
+    long_name = definition["long_name"]
+    is_value_type = long_name in VALUE_TYPES_DEFAULTS
+    return is_value_type
+
+def parse_struct_string(string, start_nesting=0):
+    #print("processing struct string", string, "start_nesting", start_nesting)
+    fields = {}
+    buff = []
+    current_fieldName = None
+    nesting_level = 0 
+
+    start_offset = 0
+    end_offset = 0
+
+    for index, char in enumerate(string):
+        buff.append(char)
+        if char == "," and nesting_level == start_nesting:
+            #print("first case", end_offset)
+            end_offset = index
+            end_offset = len(string) if end_offset == 0 else end_offset
+
+            val = "".join(string[start_offset:end_offset])
+            fields[current_fieldName] = val.strip()
+            start_offset = index + 1
+            #print("done with field name", current_fieldName, "value", fields[current_fieldName])
+
+        if char == "[" or char == "(":
+            nesting_level  += 1
+            if nesting_level == start_nesting:
+                start_offset = index + 1 
+                #print("nesting & setting start offset", start_offset)
+            #print("nesting down", nesting_level)
+
+        if char == "]" or char == ")" :
+            #print("nesting up", nesting_level)
+            if nesting_level == start_nesting:
+                end_offset = index
+                #print("unesting & setting end offset", end_offset)
+            nesting_level  -= 1
+
+
+        if char == ":" and nesting_level == start_nesting:
+            end_offset = index
+            fieldName = "".join(string[start_offset:end_offset])
+            current_fieldName = fieldName.strip()
+            start_offset = index + 1
+            end_offset = 0 #hack
+            #print("starting field name", fieldName, "index", index)
+            buff = []
+            
+    end_offset = len(string) if end_offset == 0 else end_offset
+    #print("final start and end offset", start_offset, end_offset, "total length", len(string))
+
+    val = "".join(string[start_offset:end_offset])
+
+    fields[current_fieldName] = val.strip()
+    #print("done with all fields", fields)
+    return fields
+
+def parse_tuplestruct_string(string, start_nesting=0):
+    #print("processing tuppleStruct", string, "start_nesting", start_nesting)
+    fields = []
+    buff = []
+    nesting_level = 0 
+    field_index = 0
+
+    start_offset = 0
+    end_offset = 0
+    # todo: strip all stuff before start_nesting
+
+    for index, char in enumerate(string):
+        buff.append(char)
+        if char == "," and nesting_level == start_nesting:
+            end_offset = index
+            end_offset = len(string) if end_offset == 0 else end_offset
+
+            val = "".join(string[start_offset:end_offset])
+            fields.append(val.strip())
+            field_index += 1
+            #print("start and end offset", start_offset, end_offset, "total length", len(string))
+            #print("done with field name", field_index, "value", fields)
+            start_offset = index + 1
+            end_offset = 0 # hack
+
+        if char == "[" or char == "(":
+            nesting_level  += 1
+            if nesting_level == start_nesting:
+                start_offset = index + 1 
+                #print("nesting & setting start offset", start_offset)
+            #print("nesting down", nesting_level)
+
+        if char == "]" or char == ")" :
+            if nesting_level == start_nesting:
+                end_offset = index
+                #print("unesting & setting end offset", end_offset)
+            #print("nesting up", nesting_level)
+            nesting_level  -= 1
+
+
+    end_offset = len(string) if end_offset == 0 else end_offset
+    #print("final start and end offset", start_offset, end_offset, "total length", len(string))
+
+    val = "".join(string[start_offset:end_offset]) #if end_offset != 0 else buff)
+    fields.append(val.strip())
+    fields = list(filter(lambda entry: entry != '', fields))
+    #print("done with all fields", fields)
+    return fields
+
+def parse_vec2(value, caster, typeName):
+    parsed = parse_struct_string(value.replace(typeName,"").replace("(", "").replace(")","") )
+    return [caster(parsed['x']), caster(parsed['y'])]
+
+def parse_vec3(value, caster, typeName):
+    parsed = parse_struct_string(value.replace(typeName,"").replace("(", "").replace(")","") )
+    return [caster(parsed['x']), caster(parsed['y']), caster(parsed['z'])]
+
+def parse_vec4(value, caster, typeName):
+    parsed = parse_struct_string(value.replace(typeName,"").replace("(", "").replace(")","") )
+    return [caster(parsed['x']), caster(parsed['y']), caster(parsed['z']), caster(parsed['w'])]
+
+def parse_color(value, caster, typeName):
+    parsed = parse_struct_string(value.replace(typeName,"").replace("(", "").replace(")","") )
+    return [caster(parsed['red']), caster(parsed['green']), caster(parsed['blue']), caster(parsed['alpha'])]
+
+def to_int(input):
+    return int(float(input))
+
+#------------------------------------------------------------------------------------
+#   Bevy Component Functions
+
+def get_bevy_components(object):
+    if 'bevy_components' in object:
+        bevy_components = json.loads(object['bevy_components'])
+        return bevy_components
+    return {}
+
+def get_bevy_component_value_by_long_name(object, long_name: str):
+    bevy_components = get_bevy_components(object)
+    if len(bevy_components.keys()) == 0 :
+        return None
+    return bevy_components.get(long_name, None)
+
+def upsert_bevy_component(item, long_name: str, value):
+    if not 'bevy_components' in item:
+        item['bevy_components'] = '{}'
+    bevy_components = json.loads(item['bevy_components'])
+    bevy_components[long_name] = value
+    item['bevy_components'] = json.dumps(bevy_components)
+
+def remove_bevy_component(item, long_name):
+    if 'bevy_components' in item:
+        bevy_components = json.loads(item['bevy_components'])
+        if long_name in bevy_components:
+            del bevy_components[long_name]
+            item['bevy_components'] = json.dumps(bevy_components)
+    if long_name in item:
+        del item[long_name]
+
+###################################################################
+# Selection Type Functions
+
+def get_selected_item(context):
+    selection = None
+
+    def get_outliner_area():
+        if bpy.context.area.type!='OUTLINER':
+            for area in bpy.context.screen.areas:
+                if area.type == 'OUTLINER':
+                    return area
+        return None
+    #print("original context", context)
    
 
+
+    if selection is None:
+        area = get_outliner_area()
+        if area is not None:
+            region = next(region for region in area.regions if region.type == "WINDOW")
+            with bpy.context.temp_override(area=area, region=region):
+                #print("overriden context", bpy.context)
+                """for obj in bpy.context.selected_ids:
+                    print(f"Selected: {obj.name} - {type(obj)}")"""
+                number_of_selections = len(bpy.context.selected_ids)
+                selection = bpy.context.selected_ids[number_of_selections - 1] if number_of_selections > 0 else None #next(iter(bpy.context.selected_ids), None)
+
+    
+
+    if selection is None:
+        number_of_selections = len(context.selected_objects)
+        selection = context.selected_objects[number_of_selections - 1] if number_of_selections > 0 else None
+
+    if selection is None:
+        try:
+            selection_overrides = json.loads(context.window_manager.blenvy_item_selected_ids)
+            #print("selection_overrides", selection_overrides)
+            if selection_overrides["type"] == "OBJECT":
+                selection = bpy.data.objects[selection_overrides["name"]]
+            elif selection_overrides["type"] == "COLLECTION":
+                selection = bpy.data.collections[selection_overrides["name"]]
+            if selection_overrides["type"] == "MESH":
+                selection = bpy.data.meshes[selection_overrides["name"]]
+            elif selection_overrides["type"] == "MATERIAL":
+                selection = bpy.data.materials[selection_overrides["name"]]
+            #print("SELECTION", selection)
+            #context.window_manager.blenvy_item_selected_ids = "{}"
+        except: pass
+    return selection
+
+def get_selection_type(selection):
+    #print("bla mesh", isinstance(selection, bpy.types.Mesh), "bli bli", selection.type)
+    if isinstance(selection, bpy.types.Material):
+        return 'MATERIAL'
+    if isinstance(selection, bpy.types.Mesh):
+        return 'MESH'
+    if isinstance(selection, bpy.types.Object):
+        return 'OBJECT'
+    if isinstance(selection, bpy.types.Collection):
+        return 'COLLECTION'
+
+def get_item_by_type(item_type, item_name):
+    item = None
+    if item_type == 'OBJECT':
+        item = bpy.data.objects[item_name]
+    elif item_type == 'COLLECTION':
+        item = bpy.data.collections[item_name]
+    elif item_type == "MESH":
+        item = bpy.data.meshes[item_name]
+    elif item_type == 'MATERIAL':
+        item = bpy.data.materials[item_name]
+    return item
 
 #------------------------------------------------------------------------------------
 #   Functions (Global)

@@ -75,6 +75,7 @@ pub fn export_types(world: &mut World) {
             //    && resources_to_filter_out.is_allowed_by_id(type_id)
         })
         .map(export_type)
+        .map(|(name, schema)| (name, schema))
         .collect::<Map<_, _>>();
 
     serde_json::to_writer_pretty(
@@ -129,7 +130,7 @@ pub fn export_type(reg: &TypeRegistration) -> (String, Value) {
                     "type": "string",
                     "type_info": "Enum",
                     "long_name": t.type_path(),
-                    "oneOf": info
+                    "one_of": info
                         .iter()
                         .map(|variant| match variant {
                             VariantInfo::Unit(v) => v.name(),
@@ -166,12 +167,12 @@ pub fn export_type(reg: &TypeRegistration) -> (String, Value) {
                         "type_info": "Tuple",
                         "long_name": v.name(),
                         "short_name":v.name(),
-                        "prefixItems": v
+                        "prefix_items": v
                             .iter()
                             .enumerate()
                             .map(|(variant_idx, field)| add_min_max(json!({"type": typ(field.type_path())}), reg, field_idx, Some(variant_idx)))
                             .collect::<Vec<_>>(),
-                        "items": false,
+                        "items": [],
                     }),
                     VariantInfo::Unit(v) => json!({
                         "long_name": v.name(),
@@ -183,7 +184,7 @@ pub fn export_type(reg: &TypeRegistration) -> (String, Value) {
                     "type": "object",
                     "type_info": "Enum",
                     "long_name": t.type_path(),
-                    "oneOf": variants,
+                    "one_of": variants,
                 })
             }
         }
@@ -191,12 +192,12 @@ pub fn export_type(reg: &TypeRegistration) -> (String, Value) {
             "long_name": t.type_path(),
             "type": "array",
             "type_info": "TupleStruct",
-            "prefixItems": info
+            "prefix_items": info
                 .iter()
                 .enumerate()
                 .map(|(idx, field)| add_min_max(json!({"type": typ(field.type_path())}), reg, idx, None))
                 .collect::<Vec<_>>(),
-            "items": false,
+            "items": [],
         }),
         TypeInfo::List(info) => {
             json!({
@@ -216,19 +217,19 @@ pub fn export_type(reg: &TypeRegistration) -> (String, Value) {
             "long_name": t.type_path(),
             "type": "object",
             "type_info": "Map",
-            "valueType": json!({"type": typ(info.value_type_path_table().path())}),
-            "keyType": json!({"type": typ(info.key_type_path_table().path())}),
+            "value_type": json!({"type": typ(info.value_type_path_table().path())}),
+            "key_type": json!({"type": typ(info.key_type_path_table().path())}),
         }),
         TypeInfo::Tuple(info) => json!({
             "long_name": t.type_path(),
             "type": "array",
             "type_info": "Tuple",
-            "prefixItems": info
+            "prefix_items": info
                 .iter()
                 .enumerate()
                 .map(|(idx, field)| add_min_max(json!({"type": typ(field.type_path())}), reg, idx, None))
                 .collect::<Vec<_>>(),
-            "items": false,
+            "items": [],
         }),
         TypeInfo::Value(info) => json!({
             "long_name": t.type_path(),

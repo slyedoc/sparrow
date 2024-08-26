@@ -3,9 +3,9 @@
     "()": {
       "is_component": false,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "()",
-      "prefixItems": [],
+      "prefix_items": [],
       "short_name": "()",
       "type": "array",
       "type_info": "Tuple"
@@ -13,9 +13,9 @@
     "(u8, u8)": {
       "is_component": false,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "(u8, u8)",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/u8"
@@ -320,9 +320,9 @@
     "bevy_animation::AnimationTargetId": {
       "is_component": false,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_animation::AnimationTargetId",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/uuid::Uuid"
@@ -337,7 +337,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_animation::Interpolation",
-      "oneOf": [
+      "one_of": [
         "Linear",
         "Step",
         "CubicSpline"
@@ -350,11 +350,11 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_animation::Keyframes",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Rotation",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/alloc::vec::Vec<glam::Quat>"
@@ -366,9 +366,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Translation",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/alloc::vec::Vec<glam::Vec3>"
@@ -380,9 +380,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Scale",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/alloc::vec::Vec<glam::Vec3>"
@@ -394,9 +394,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weights",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/alloc::vec::Vec<f32>"
@@ -552,11 +552,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<()>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -568,9 +568,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<()>"
@@ -590,11 +590,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_animation::AnimationClip>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -606,9 +606,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_animation::AnimationClip>"
@@ -628,11 +628,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_animation::graph::AnimationGraph>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -644,9 +644,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_animation::graph::AnimationGraph>"
@@ -666,11 +666,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_asset::assets::LoadedUntypedAsset>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -682,9 +682,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_asset::assets::LoadedUntypedAsset>"
@@ -704,11 +704,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_asset::folder::LoadedFolder>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -720,9 +720,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_asset::folder::LoadedFolder>"
@@ -742,11 +742,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_audio::audio_source::AudioSource>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -758,9 +758,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_audio::audio_source::AudioSource>"
@@ -780,11 +780,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_audio::pitch::Pitch>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -796,9 +796,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_audio::pitch::Pitch>"
@@ -818,11 +818,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_gizmos::LineGizmo>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -834,9 +834,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_gizmos::LineGizmo>"
@@ -856,11 +856,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_gltf::Gltf>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -872,9 +872,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_gltf::Gltf>"
@@ -894,11 +894,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_gltf::GltfMesh>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -910,9 +910,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_gltf::GltfMesh>"
@@ -932,11 +932,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_gltf::GltfNode>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -948,9 +948,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_gltf::GltfNode>"
@@ -970,11 +970,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_gltf::GltfPrimitive>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -986,9 +986,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_gltf::GltfPrimitive>"
@@ -1008,11 +1008,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_pbr::pbr_material::StandardMaterial>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -1024,9 +1024,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_pbr::pbr_material::StandardMaterial>"
@@ -1046,11 +1046,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_render::mesh::mesh::Mesh>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -1062,9 +1062,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_render::mesh::mesh::Mesh>"
@@ -1084,11 +1084,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_render::mesh::mesh::skinning::SkinnedMeshInverseBindposes>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -1100,9 +1100,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_render::mesh::mesh::skinning::SkinnedMeshInverseBindposes>"
@@ -1122,11 +1122,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_render::render_resource::shader::Shader>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -1138,9 +1138,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_render::render_resource::shader::Shader>"
@@ -1160,11 +1160,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_render::texture::image::Image>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -1176,9 +1176,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_render::texture::image::Image>"
@@ -1198,11 +1198,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_scene::dynamic_scene::DynamicScene>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -1214,9 +1214,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_scene::dynamic_scene::DynamicScene>"
@@ -1236,11 +1236,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_scene::scene::Scene>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -1252,9 +1252,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_scene::scene::Scene>"
@@ -1274,11 +1274,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_sprite::mesh2d::color_material::ColorMaterial>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -1290,9 +1290,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_sprite::mesh2d::color_material::ColorMaterial>"
@@ -1312,11 +1312,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_sprite::texture_atlas::TextureAtlasLayout>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -1328,9 +1328,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_sprite::texture_atlas::TextureAtlasLayout>"
@@ -1350,11 +1350,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_asset::handle::Handle<bevy_text::font::Font>",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Strong",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/std::sync::Arc<bevy_asset::handle::StrongHandle>"
@@ -1366,9 +1366,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Weak",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_text::font::Font>"
@@ -1388,7 +1388,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<()>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -1434,7 +1434,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_animation::AnimationClip>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -1480,7 +1480,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_animation::graph::AnimationGraph>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -1526,7 +1526,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_asset::assets::LoadedUntypedAsset>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -1572,7 +1572,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_asset::folder::LoadedFolder>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -1618,7 +1618,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_audio::audio_source::AudioSource>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -1664,7 +1664,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_audio::pitch::Pitch>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -1710,7 +1710,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_gizmos::LineGizmo>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -1756,7 +1756,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_gltf::Gltf>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -1802,7 +1802,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_gltf::GltfMesh>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -1848,7 +1848,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_gltf::GltfNode>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -1894,7 +1894,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_gltf::GltfPrimitive>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -1940,7 +1940,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_pbr::pbr_material::StandardMaterial>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -1986,7 +1986,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_render::mesh::mesh::Mesh>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -2032,7 +2032,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_render::mesh::mesh::skinning::SkinnedMeshInverseBindposes>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -2078,7 +2078,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_render::render_resource::shader::Shader>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -2124,7 +2124,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_render::texture::image::Image>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -2170,7 +2170,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_scene::dynamic_scene::DynamicScene>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -2216,7 +2216,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_scene::scene::Scene>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -2262,7 +2262,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_sprite::mesh2d::color_material::ColorMaterial>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -2308,7 +2308,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_sprite::texture_atlas::TextureAtlasLayout>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -2354,7 +2354,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_asset::id::AssetId<bevy_text::font::Font>",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Index",
@@ -2407,9 +2407,9 @@
     "bevy_audio::audio::DefaultSpatialScale": {
       "is_component": false,
       "is_resource": true,
-      "items": false,
+      "items": [],
       "long_name": "bevy_audio::audio::DefaultSpatialScale",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/bevy_audio::audio::SpatialScale"
@@ -2443,7 +2443,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_audio::audio::PlaybackMode",
-      "oneOf": [
+      "one_of": [
         "Once",
         "Loop",
         "Despawn",
@@ -2529,9 +2529,9 @@
     "bevy_audio::audio::SpatialScale": {
       "is_component": false,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_audio::audio::SpatialScale",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/glam::Vec3"
@@ -2545,9 +2545,9 @@
     "bevy_audio::audio::Volume": {
       "is_component": false,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_audio::audio::Volume",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/f32"
@@ -2562,11 +2562,11 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_color::color::Color",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Srgba",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_color::srgba::Srgba"
@@ -2578,9 +2578,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "LinearRgba",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_color::linear_rgba::LinearRgba"
@@ -2592,9 +2592,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Hsla",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_color::hsla::Hsla"
@@ -2606,9 +2606,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Hsva",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_color::hsva::Hsva"
@@ -2620,9 +2620,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Hwba",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_color::hwba::Hwba"
@@ -2634,9 +2634,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Laba",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_color::laba::Laba"
@@ -2648,9 +2648,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Lcha",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_color::lcha::Lcha"
@@ -2662,9 +2662,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Oklaba",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_color::oklaba::Oklaba"
@@ -2676,9 +2676,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Oklcha",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_color::oklcha::Oklcha"
@@ -2690,9 +2690,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Xyza",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_color::xyza::Xyza"
@@ -3183,7 +3183,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_core_pipeline::bloom::settings::BloomCompositeMode",
-      "oneOf": [
+      "one_of": [
         "EnergyConserving",
         "Additive"
       ],
@@ -3348,11 +3348,11 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_core_pipeline::core_3d::camera_3d::Camera3dDepthLoadOp",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Clear",
-          "prefixItems": [
+          "prefix_items": [
             {
               "maximum": 1.0,
               "minimum": 0.0,
@@ -3376,9 +3376,9 @@
     "bevy_core_pipeline::core_3d::camera_3d::Camera3dDepthTextureUsage": {
       "is_component": false,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_core_pipeline::core_3d::camera_3d::Camera3dDepthTextureUsage",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/u32"
@@ -3393,7 +3393,7 @@
       "is_component": false,
       "is_resource": true,
       "long_name": "bevy_core_pipeline::core_3d::camera_3d::ScreenSpaceTransmissionQuality",
-      "oneOf": [
+      "one_of": [
         "Low",
         "Medium",
         "High",
@@ -3438,7 +3438,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_core_pipeline::fxaa::Sensitivity",
-      "oneOf": [
+      "one_of": [
         "Low",
         "Medium",
         "High",
@@ -3497,7 +3497,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_core_pipeline::smaa::SmaaPreset",
-      "oneOf": [
+      "one_of": [
         "Low",
         "Medium",
         "High",
@@ -3530,7 +3530,7 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_core_pipeline::tonemapping::DebandDither",
-      "oneOf": [
+      "one_of": [
         "Disabled",
         "Enabled"
       ],
@@ -3542,7 +3542,7 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_core_pipeline::tonemapping::Tonemapping",
-      "oneOf": [
+      "one_of": [
         "None",
         "Reinhard",
         "ReinhardLuminance",
@@ -3682,7 +3682,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_gizmos::config::GizmoLineJoint",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
@@ -3690,9 +3690,9 @@
           "long_name": "Miter"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Round",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/u32"
@@ -3715,7 +3715,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_gizmos::config::GizmoLineStyle",
-      "oneOf": [
+      "one_of": [
         "Solid",
         "Dotted"
       ],
@@ -3727,11 +3727,11 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_gizmos::light::LightGizmoColor",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Manual",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_color::color::Color"
@@ -3878,9 +3878,9 @@
     "bevy_hierarchy::components::children::Children": {
       "is_component": true,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_hierarchy::components::children::Children",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/smallvec::SmallVec<[bevy_ecs::entity::Entity; 8]>"
@@ -3894,9 +3894,9 @@
     "bevy_hierarchy::components::parent::Parent": {
       "is_component": true,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_hierarchy::components::parent::Parent",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/bevy_ecs::entity::Entity"
@@ -3911,7 +3911,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_input::ButtonState",
-      "oneOf": [
+      "one_of": [
         "Pressed",
         "Released"
       ],
@@ -4097,7 +4097,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_input::gamepad::GamepadAxisType",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "LeftStickX"
         },
@@ -4117,9 +4117,9 @@
           "long_name": "RightZ"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Other",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/u8"
@@ -4220,7 +4220,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_input::gamepad::GamepadButtonType",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "South"
         },
@@ -4279,9 +4279,9 @@
           "long_name": "DPadRight"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Other",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/u8"
@@ -4301,11 +4301,11 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_input::gamepad::GamepadConnection",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Connected",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_input::gamepad::GamepadInfo"
@@ -4353,11 +4353,11 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_input::gamepad::GamepadEvent",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Connection",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_input::gamepad::GamepadConnectionEvent"
@@ -4369,9 +4369,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Button",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_input::gamepad::GamepadButtonChangedEvent"
@@ -4383,9 +4383,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Axis",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_input::gamepad::GamepadAxisChangedEvent"
@@ -4483,9 +4483,9 @@
     "bevy_input::gestures::PanGesture": {
       "is_component": false,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_input::gestures::PanGesture",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/glam::Vec2"
@@ -4499,9 +4499,9 @@
     "bevy_input::gestures::PinchGesture": {
       "is_component": false,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_input::gestures::PinchGesture",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/f32"
@@ -4515,9 +4515,9 @@
     "bevy_input::gestures::RotationGesture": {
       "is_component": false,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_input::gestures::RotationGesture",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/f32"
@@ -4532,11 +4532,11 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_input::keyboard::Key",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Character",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/smol_str::SmolStr"
@@ -4548,9 +4548,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Unidentified",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_input::keyboard::NativeKey"
@@ -4562,9 +4562,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Dead",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/core::option::Option<char>"
@@ -5502,11 +5502,11 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_input::keyboard::KeyCode",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Unidentified",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_input::keyboard::NativeKeyCode"
@@ -6145,14 +6145,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_input::keyboard::NativeKey",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "Unidentified"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Android",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/u32"
@@ -6164,9 +6164,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "MacOS",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/u16"
@@ -6178,9 +6178,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Windows",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/u16"
@@ -6192,9 +6192,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Xkb",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/u32"
@@ -6206,9 +6206,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Web",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/smol_str::SmolStr"
@@ -6228,14 +6228,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_input::keyboard::NativeKeyCode",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "Unidentified"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Android",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/u32"
@@ -6247,9 +6247,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "MacOS",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/u16"
@@ -6261,9 +6261,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Windows",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/u16"
@@ -6275,9 +6275,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Xkb",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/u32"
@@ -6297,7 +6297,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_input::mouse::MouseButton",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "Left"
         },
@@ -6314,9 +6314,9 @@
           "long_name": "Forward"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Other",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/u16"
@@ -6367,7 +6367,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_input::touch::ForceTouch",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Calibrated",
@@ -6400,9 +6400,9 @@
           "type_info": "Struct"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Normalized",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/f64"
@@ -6464,7 +6464,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_input::touch::TouchPhase",
-      "oneOf": [
+      "one_of": [
         "Started",
         "Moved",
         "Ended",
@@ -6550,7 +6550,7 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_pbr::cluster::ClusterConfig",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
@@ -6637,14 +6637,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_pbr::cluster::ClusterFarZMode",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "MaxClusterableObjectRange"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Constant",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/f32"
@@ -6689,7 +6689,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_pbr::fog::FogFalloff",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Linear",
@@ -6969,7 +6969,7 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_pbr::light::ShadowFilteringMethod",
-      "oneOf": [
+      "one_of": [
         "Hardware2x2",
         "Gaussian",
         "Temporal"
@@ -7243,9 +7243,9 @@
     "bevy_pbr::material::DefaultOpaqueRendererMethod": {
       "is_component": false,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_pbr::material::DefaultOpaqueRendererMethod",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/bevy_pbr::material::OpaqueRendererMethod"
@@ -7260,7 +7260,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_pbr::material::OpaqueRendererMethod",
-      "oneOf": [
+      "one_of": [
         "Forward",
         "Deferred",
         "Auto"
@@ -7273,7 +7273,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_pbr::parallax::ParallaxMappingMethod",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "Occlusion"
         },
@@ -7558,7 +7558,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_pbr::pbr_material::UvChannel",
-      "oneOf": [
+      "one_of": [
         "Uv0",
         "Uv1"
       ],
@@ -7570,7 +7570,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_pbr::ssao::ScreenSpaceAmbientOcclusionQualityLevel",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "Low"
         },
@@ -7775,14 +7775,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_render::alpha::AlphaMode",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "Opaque"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Mask",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/f32"
@@ -7888,9 +7888,9 @@
     "bevy_render::camera::camera::MipBias": {
       "is_component": true,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_render::camera::camera::MipBias",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/f32"
@@ -7954,9 +7954,9 @@
     "bevy_render::camera::clear_color::ClearColor": {
       "is_component": false,
       "is_resource": true,
-      "items": false,
+      "items": [],
       "long_name": "bevy_render::camera::clear_color::ClearColor",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/bevy_color::color::Color"
@@ -7971,14 +7971,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_render::camera::clear_color::ClearColorConfig",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "Default"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Custom",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_color::color::Color"
@@ -8087,11 +8087,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_render::camera::projection::Projection",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Perspective",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_render::camera::projection::PerspectiveProjection"
@@ -8103,9 +8103,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Orthographic",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_render::camera::projection::OrthographicProjection"
@@ -8125,7 +8125,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_render::camera::projection::ScalingMode",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "Fixed",
@@ -8152,9 +8152,9 @@
           "type_info": "Struct"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "WindowSize",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/f32"
@@ -8216,9 +8216,9 @@
           "type_info": "Struct"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "FixedVertical",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/f32"
@@ -8230,9 +8230,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "FixedHorizontal",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/f32"
@@ -8283,11 +8283,11 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_render::mesh::mesh::Indices",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "U16",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/alloc::vec::Vec<u16>"
@@ -8299,9 +8299,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "U32",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/alloc::vec::Vec<u32>"
@@ -8637,7 +8637,7 @@
       "is_component": false,
       "is_resource": true,
       "long_name": "bevy_render::view::Msaa",
-      "oneOf": [
+      "one_of": [
         "Off",
         "Sample2",
         "Sample4",
@@ -8650,9 +8650,9 @@
     "bevy_render::view::visibility::InheritedVisibility": {
       "is_component": true,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_render::view::visibility::InheritedVisibility",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/bool"
@@ -8677,9 +8677,9 @@
     "bevy_render::view::visibility::ViewVisibility": {
       "is_component": true,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_render::view::visibility::ViewVisibility",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/bool"
@@ -8694,7 +8694,7 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_render::view::visibility::Visibility",
-      "oneOf": [
+      "one_of": [
         "Inherited",
         "Hidden",
         "Visible"
@@ -8742,9 +8742,9 @@
     "bevy_render::view::visibility::render_layers::RenderLayers": {
       "is_component": true,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_render::view::visibility::render_layers::RenderLayers",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/smallvec::SmallVec<[u64; 1]>"
@@ -8793,9 +8793,9 @@
     "bevy_sprite::mesh2d::mesh::Mesh2dHandle": {
       "is_component": true,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_sprite::mesh2d::mesh::Mesh2dHandle",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/bevy_asset::handle::Handle<bevy_render::mesh::mesh::Mesh>"
@@ -8810,7 +8810,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_sprite::sprite::Anchor",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "Center"
         },
@@ -8839,9 +8839,9 @@
           "long_name": "TopRight"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Custom",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/glam::Vec2"
@@ -8861,11 +8861,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_sprite::sprite::ImageScaleMode",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Sliced",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_sprite::texture_slice::slicer::TextureSlicer"
@@ -9056,7 +9056,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_sprite::texture_slice::slicer::SliceScaleMode",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "Stretch"
         },
@@ -9242,7 +9242,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_text::text::BreakLineOn",
-      "oneOf": [
+      "one_of": [
         "WordBoundary",
         "AnyCharacter",
         "NoWrap"
@@ -9255,7 +9255,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_text::text::JustifyText",
-      "oneOf": [
+      "one_of": [
         "Left",
         "Center",
         "Right"
@@ -9793,7 +9793,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_time::timer::TimerMode",
-      "oneOf": [
+      "one_of": [
         "Once",
         "Repeating"
       ],
@@ -9841,9 +9841,9 @@
     "bevy_transform::components::global_transform::GlobalTransform": {
       "is_component": true,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_transform::components::global_transform::GlobalTransform",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/glam::Affine3A"
@@ -9888,9 +9888,9 @@
     "bevy_ui::UiScale": {
       "is_component": false,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_ui::UiScale",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/f32"
@@ -9905,7 +9905,7 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_ui::focus::FocusPolicy",
-      "oneOf": [
+      "one_of": [
         "Block",
         "Pass"
       ],
@@ -9917,7 +9917,7 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_ui::focus::Interaction",
-      "oneOf": [
+      "one_of": [
         "Pressed",
         "Hovered",
         "None"
@@ -9991,14 +9991,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_ui::geometry::Val",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "Auto"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Px",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/f32"
@@ -10010,9 +10010,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Percent",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/f32"
@@ -10024,9 +10024,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Vw",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/f32"
@@ -10038,9 +10038,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Vh",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/f32"
@@ -10052,9 +10052,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "VMin",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/f32"
@@ -10066,9 +10066,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "VMax",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/f32"
@@ -10099,7 +10099,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_ui::ui_node::AlignContent",
-      "oneOf": [
+      "one_of": [
         "Default",
         "Start",
         "End",
@@ -10119,7 +10119,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_ui::ui_node::AlignItems",
-      "oneOf": [
+      "one_of": [
         "Default",
         "Start",
         "End",
@@ -10137,7 +10137,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_ui::ui_node::AlignSelf",
-      "oneOf": [
+      "one_of": [
         "Auto",
         "Start",
         "End",
@@ -10154,9 +10154,9 @@
     "bevy_ui::ui_node::BackgroundColor": {
       "is_component": true,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_ui::ui_node::BackgroundColor",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/bevy_color::color::Color"
@@ -10170,9 +10170,9 @@
     "bevy_ui::ui_node::BorderColor": {
       "is_component": true,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_ui::ui_node::BorderColor",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/bevy_color::color::Color"
@@ -10243,7 +10243,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_ui::ui_node::Direction",
-      "oneOf": [
+      "one_of": [
         "Inherit",
         "LeftToRight",
         "RightToLeft"
@@ -10256,7 +10256,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_ui::ui_node::Display",
-      "oneOf": [
+      "one_of": [
         "Flex",
         "Grid",
         "Block",
@@ -10270,7 +10270,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_ui::ui_node::FlexDirection",
-      "oneOf": [
+      "one_of": [
         "Row",
         "Column",
         "RowReverse",
@@ -10284,7 +10284,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_ui::ui_node::FlexWrap",
-      "oneOf": [
+      "one_of": [
         "NoWrap",
         "Wrap",
         "WrapReverse"
@@ -10297,7 +10297,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_ui::ui_node::GridAutoFlow",
-      "oneOf": [
+      "one_of": [
         "Row",
         "Column",
         "RowDense",
@@ -10363,11 +10363,11 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_ui::ui_node::GridTrackRepetition",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Count",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/u16"
@@ -10393,7 +10393,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_ui::ui_node::JustifyContent",
-      "oneOf": [
+      "one_of": [
         "Default",
         "Start",
         "End",
@@ -10413,7 +10413,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_ui::ui_node::JustifyItems",
-      "oneOf": [
+      "one_of": [
         "Default",
         "Start",
         "End",
@@ -10429,7 +10429,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_ui::ui_node::JustifySelf",
-      "oneOf": [
+      "one_of": [
         "Auto",
         "Start",
         "End",
@@ -10560,7 +10560,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_ui::ui_node::OverflowAxis",
-      "oneOf": [
+      "one_of": [
         "Visible",
         "Clip",
         "Hidden"
@@ -10573,7 +10573,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_ui::ui_node::PositionType",
-      "oneOf": [
+      "one_of": [
         "Relative",
         "Absolute"
       ],
@@ -10849,9 +10849,9 @@
     "bevy_ui::ui_node::TargetCamera": {
       "is_component": false,
       "is_resource": false,
-      "items": false,
+      "items": [],
       "long_name": "bevy_ui::ui_node::TargetCamera",
-      "prefixItems": [
+      "prefix_items": [
         {
           "type": {
             "$ref": "#/$defs/bevy_ecs::entity::Entity"
@@ -10903,11 +10903,11 @@
       "is_component": true,
       "is_resource": false,
       "long_name": "bevy_ui::ui_node::ZIndex",
-      "oneOf": [
+      "one_of": [
         {
-          "items": false,
+          "items": [],
           "long_name": "Local",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/i32"
@@ -10919,9 +10919,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Global",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/i32"
@@ -11022,7 +11022,7 @@
     "bevy_utils::hashbrown::HashMap<bevy_animation::AnimationTargetId, alloc::vec::Vec<bevy_animation::VariableCurve>, bevy_utils::NoOpHash>": {
       "is_component": false,
       "is_resource": false,
-      "keyType": {
+      "key_type": {
         "type": {
           "$ref": "#/$defs/bevy_animation::AnimationTargetId"
         }
@@ -11031,7 +11031,7 @@
       "short_name": "HashMap<AnimationTargetId, Vec<VariableCurve>, NoOpHash>",
       "type": "object",
       "type_info": "Map",
-      "valueType": {
+      "value_type": {
         "type": {
           "$ref": "#/$defs/alloc::vec::Vec<bevy_animation::VariableCurve>"
         }
@@ -11040,7 +11040,7 @@
     "bevy_utils::hashbrown::HashMap<bevy_asset::id::AssetId<bevy_render::texture::image::Image>, usize, bevy_utils::hashbrown::hash_map::DefaultHashBuilder>": {
       "is_component": false,
       "is_resource": false,
-      "keyType": {
+      "key_type": {
         "type": {
           "$ref": "#/$defs/bevy_asset::id::AssetId<bevy_render::texture::image::Image>"
         }
@@ -11049,7 +11049,7 @@
       "short_name": "HashMap<AssetId<Image>, usize, DefaultHashBuilder>",
       "type": "object",
       "type_info": "Map",
-      "valueType": {
+      "value_type": {
         "type": {
           "$ref": "#/$defs/usize"
         }
@@ -11058,7 +11058,7 @@
     "bevy_utils::hashbrown::HashMap<bevy_ecs::entity::Entity, alloc::vec::Vec<bevy_pbr::light::Cascade>, bevy_ecs::entity::hash::EntityHash>": {
       "is_component": false,
       "is_resource": false,
-      "keyType": {
+      "key_type": {
         "type": {
           "$ref": "#/$defs/bevy_ecs::entity::Entity"
         }
@@ -11067,7 +11067,7 @@
       "short_name": "HashMap<Entity, Vec<Cascade>, EntityHash>",
       "type": "object",
       "type_info": "Map",
-      "valueType": {
+      "value_type": {
         "type": {
           "$ref": "#/$defs/alloc::vec::Vec<bevy_pbr::light::Cascade>"
         }
@@ -11076,7 +11076,7 @@
     "bevy_utils::hashbrown::HashMap<bevy_input::gamepad::GamepadAxis, bevy_input::gamepad::AxisSettings, bevy_utils::hashbrown::hash_map::DefaultHashBuilder>": {
       "is_component": false,
       "is_resource": false,
-      "keyType": {
+      "key_type": {
         "type": {
           "$ref": "#/$defs/bevy_input::gamepad::GamepadAxis"
         }
@@ -11085,7 +11085,7 @@
       "short_name": "HashMap<GamepadAxis, AxisSettings, DefaultHashBuilder>",
       "type": "object",
       "type_info": "Map",
-      "valueType": {
+      "value_type": {
         "type": {
           "$ref": "#/$defs/bevy_input::gamepad::AxisSettings"
         }
@@ -11094,7 +11094,7 @@
     "bevy_utils::hashbrown::HashMap<bevy_input::gamepad::GamepadButton, bevy_input::gamepad::ButtonAxisSettings, bevy_utils::hashbrown::hash_map::DefaultHashBuilder>": {
       "is_component": false,
       "is_resource": false,
-      "keyType": {
+      "key_type": {
         "type": {
           "$ref": "#/$defs/bevy_input::gamepad::GamepadButton"
         }
@@ -11103,7 +11103,7 @@
       "short_name": "HashMap<GamepadButton, ButtonAxisSettings, DefaultHashBuilder>",
       "type": "object",
       "type_info": "Map",
-      "valueType": {
+      "value_type": {
         "type": {
           "$ref": "#/$defs/bevy_input::gamepad::ButtonAxisSettings"
         }
@@ -11112,7 +11112,7 @@
     "bevy_utils::hashbrown::HashMap<bevy_input::gamepad::GamepadButton, bevy_input::gamepad::ButtonSettings, bevy_utils::hashbrown::hash_map::DefaultHashBuilder>": {
       "is_component": false,
       "is_resource": false,
-      "keyType": {
+      "key_type": {
         "type": {
           "$ref": "#/$defs/bevy_input::gamepad::GamepadButton"
         }
@@ -11121,7 +11121,7 @@
       "short_name": "HashMap<GamepadButton, ButtonSettings, DefaultHashBuilder>",
       "type": "object",
       "type_info": "Map",
-      "valueType": {
+      "value_type": {
         "type": {
           "$ref": "#/$defs/bevy_input::gamepad::ButtonSettings"
         }
@@ -11130,7 +11130,7 @@
     "bevy_utils::hashbrown::HashMap<petgraph::graph::NodeIndex, f32, bevy_utils::hashbrown::hash_map::DefaultHashBuilder>": {
       "is_component": false,
       "is_resource": false,
-      "keyType": {
+      "key_type": {
         "type": {
           "$ref": "#/$defs/petgraph::graph::NodeIndex"
         }
@@ -11139,7 +11139,7 @@
       "short_name": "HashMap<NodeIndex, f32, DefaultHashBuilder>",
       "type": "object",
       "type_info": "Map",
-      "valueType": {
+      "value_type": {
         "type": {
           "$ref": "#/$defs/f32"
         }
@@ -11149,7 +11149,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_window::cursor::CursorIcon",
-      "oneOf": [
+      "one_of": [
         "Default",
         "ContextMenu",
         "Help",
@@ -11193,7 +11193,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_window::event::AppLifecycle",
-      "oneOf": [
+      "one_of": [
         "Idle",
         "Running",
         "WillSuspend",
@@ -11276,7 +11276,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_window::event::FileDragAndDrop",
-      "oneOf": [
+      "one_of": [
         {
           "additional_properties": false,
           "long_name": "DroppedFile",
@@ -11647,7 +11647,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_window::window::CompositeAlphaMode",
-      "oneOf": [
+      "one_of": [
         "Auto",
         "Opaque",
         "PreMultiplied",
@@ -11699,7 +11699,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_window::window::CursorGrabMode",
-      "oneOf": [
+      "one_of": [
         "None",
         "Confined",
         "Locked"
@@ -11770,7 +11770,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_window::window::MonitorSelection",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "Current"
         },
@@ -11778,9 +11778,9 @@
           "long_name": "Primary"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Index",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/usize"
@@ -11800,7 +11800,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_window::window::PresentMode",
-      "oneOf": [
+      "one_of": [
         "AutoVsync",
         "AutoNoVsync",
         "Fifo",
@@ -12009,7 +12009,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_window::window::WindowLevel",
-      "oneOf": [
+      "one_of": [
         "AlwaysOnBottom",
         "Normal",
         "AlwaysOnTop"
@@ -12022,7 +12022,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_window::window::WindowMode",
-      "oneOf": [
+      "one_of": [
         "Windowed",
         "BorderlessFullscreen",
         "SizedFullscreen",
@@ -12036,14 +12036,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_window::window::WindowPosition",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "Automatic"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Centered",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_window::window::MonitorSelection"
@@ -12055,9 +12055,9 @@
           "type_info": "Tuple"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "At",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/glam::IVec2"
@@ -12150,7 +12150,7 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "bevy_window::window::WindowTheme",
-      "oneOf": [
+      "one_of": [
         "Light",
         "Dark"
       ],
@@ -12218,14 +12218,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<(u8, u8)>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/(u8, u8)"
@@ -12245,14 +12245,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<alloc::string::String>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/alloc::string::String"
@@ -12272,14 +12272,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<alloc::vec::Vec<alloc::string::String>>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/alloc::vec::Vec<alloc::string::String>"
@@ -12299,14 +12299,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<bevy_asset::handle::Handle<bevy_render::mesh::mesh::Mesh>>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::handle::Handle<bevy_render::mesh::mesh::Mesh>"
@@ -12326,14 +12326,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<bevy_asset::handle::Handle<bevy_render::texture::image::Image>>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_asset::handle::Handle<bevy_render::texture::image::Image>"
@@ -12353,14 +12353,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<bevy_audio::audio::SpatialScale>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_audio::audio::SpatialScale"
@@ -12380,14 +12380,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<bevy_color::color::Color>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_color::color::Color"
@@ -12407,14 +12407,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<bevy_ecs::entity::Entity>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_ecs::entity::Entity"
@@ -12434,14 +12434,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<bevy_input::touch::ForceTouch>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_input::touch::ForceTouch"
@@ -12461,14 +12461,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<bevy_math::rects::rect::Rect>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_math::rects::rect::Rect"
@@ -12488,14 +12488,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<bevy_render::camera::camera::Viewport>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_render::camera::camera::Viewport"
@@ -12515,14 +12515,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<bevy_render::mesh::mesh::Indices>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_render::mesh::mesh::Indices"
@@ -12542,14 +12542,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<bevy_utils::Instant>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_utils::Instant"
@@ -12569,14 +12569,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<bevy_utils::hashbrown::HashMap<bevy_asset::id::AssetId<bevy_render::texture::image::Image>, usize, bevy_utils::hashbrown::hash_map::DefaultHashBuilder>>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_utils::hashbrown::HashMap<bevy_asset::id::AssetId<bevy_render::texture::image::Image>, usize, bevy_utils::hashbrown::hash_map::DefaultHashBuilder>"
@@ -12596,14 +12596,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<bevy_window::window::WindowTheme>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bevy_window::window::WindowTheme"
@@ -12623,14 +12623,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<bool>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/bool"
@@ -12650,14 +12650,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<char>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/char"
@@ -12677,14 +12677,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<core::num::NonZeroI16>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/core::num::NonZeroI16"
@@ -12704,14 +12704,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<core::num::NonZeroU16>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/core::num::NonZeroU16"
@@ -12731,14 +12731,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<core::num::NonZeroU32>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/core::num::NonZeroU32"
@@ -12758,14 +12758,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<f32>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/f32"
@@ -12785,14 +12785,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<f64>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/f64"
@@ -12812,14 +12812,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<glam::DVec2>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/glam::DVec2"
@@ -12839,14 +12839,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<glam::Vec2>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/glam::Vec2"
@@ -12866,14 +12866,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<petgraph::graph::NodeIndex>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/petgraph::graph::NodeIndex"
@@ -12893,14 +12893,14 @@
       "is_component": false,
       "is_resource": false,
       "long_name": "core::option::Option<usize>",
-      "oneOf": [
+      "one_of": [
         {
           "long_name": "None"
         },
         {
-          "items": false,
+          "items": [],
           "long_name": "Some",
-          "prefixItems": [
+          "prefix_items": [
             {
               "type": {
                 "$ref": "#/$defs/usize"
@@ -14002,7 +14002,7 @@
     "std::collections::BTreeMap<petgraph::graph::NodeIndex, bevy_animation::ActiveAnimation>": {
       "is_component": false,
       "is_resource": false,
-      "keyType": {
+      "key_type": {
         "type": {
           "$ref": "#/$defs/petgraph::graph::NodeIndex"
         }
@@ -14011,7 +14011,7 @@
       "short_name": "BTreeMap<NodeIndex, ActiveAnimation>",
       "type": "object",
       "type_info": "Map",
-      "valueType": {
+      "value_type": {
         "type": {
           "$ref": "#/$defs/bevy_animation::ActiveAnimation"
         }
