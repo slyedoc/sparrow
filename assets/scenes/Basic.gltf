@@ -44,7 +44,7 @@
 				"sparrow_scene_props":{
 					"export":1
 				},
-				"bevy_components":"{\"basic::ItemType\": \"Object\"}"
+				"bevy_components":"{\"basic::ItemType\": \"Scene\"}"
 			},
 			"name":"Basic",
 			"nodes":[
@@ -57,14 +57,14 @@
 	"nodes":[
 		{
 			"extras":{
-				"bevy_components":"{\"basic::ItemType\": \"Object\"}",
+				"bevy_components":"{\"basic::ItemType\": \"Scene\"}",
 				"components_meta":{
 					"components":[
 						{
 							"short_name":"ItemType",
 							"long_name":"basic::ItemType",
 							"2D1CCE2570E8B0B90FE8F5DE6A487AA579243DE530FA6E98_ui":{
-								"selection":0
+								"selection":2
 							}
 						}
 					]

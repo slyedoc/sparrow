@@ -308,51 +308,15 @@ def remove_bevy_component(item, long_name):
 
 
 def get_selected_item(context):
-    selection = None
-
-    def get_outliner_area():
-        if bpy.context.area.type!='OUTLINER':
-            for area in bpy.context.screen.areas:
-                if area.type == 'OUTLINER':
-                    return area
-        return None
-    #print("original context", context)
-   
-
-
-    if selection is None:
-        area = get_outliner_area()
-        if area is not None:
-            region = next(region for region in area.regions if region.type == "WINDOW")
-            with bpy.context.temp_override(area=area, region=region):
-                #print("overriden context", bpy.context)
-                """for obj in bpy.context.selected_ids:
-                    print(f"Selected: {obj.name} - {type(obj)}")"""
-                number_of_selections = len(bpy.context.selected_ids)
-                selection = bpy.context.selected_ids[number_of_selections - 1] if number_of_selections > 0 else None #next(iter(bpy.context.selected_ids), None)
-
+    if context.space_data.context == 'SCENE':
+        return context.scene
+    if context.space_data.context == 'OBJECT':
+        return context.object
+    if context.space_data.context == 'COLLECTION':
+        return context.collection
+    print("ERROR: could not get selected item")
+    return None
     
-
-    if selection is None:
-        number_of_selections = len(context.selected_objects)
-        selection = context.selected_objects[number_of_selections - 1] if number_of_selections > 0 else None
-
-    if selection is None:
-        try:
-            selection_overrides = json.loads(context.window_manager.blenvy_item_selected_ids)
-            #print("selection_overrides", selection_overrides)
-            if selection_overrides["type"] == "OBJECT":
-                selection = bpy.data.objects[selection_overrides["name"]]
-            elif selection_overrides["type"] == "COLLECTION":
-                selection = bpy.data.collections[selection_overrides["name"]]
-            if selection_overrides["type"] == "MESH":
-                selection = bpy.data.meshes[selection_overrides["name"]]
-            elif selection_overrides["type"] == "MATERIAL":
-                selection = bpy.data.materials[selection_overrides["name"]]
-            #print("SELECTION", selection)
-            #context.window_manager.blenvy_item_selected_ids = "{}"
-        except: pass
-    return selection
 
 def get_selection_type(selection):
     #print("bla mesh", isinstance(selection, bpy.types.Mesh), "bli bli", selection.type)
