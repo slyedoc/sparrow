@@ -1,13 +1,12 @@
-
 mod helpers;
 
 use bevy::prelude::*;
-use sparrow::SparrowPlugin; 
+use sparrow::SparrowPlugin;
 
 use bevy_asset_loader::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use sickle_ui::{prelude::*, SickleUiPlugin};
 use serde::{Deserialize, Serialize};
+use sickle_ui::{prelude::*, SickleUiPlugin};
 
 #[derive(AssetCollection, Resource)]
 pub struct GameAssets {
@@ -21,7 +20,6 @@ pub enum AppState {
     Loading,
     Playing,
 }
-
 
 fn main() {
     App::new()
@@ -55,28 +53,24 @@ fn setup(mut commands: Commands, game_assets: Res<GameAssets>) {
 
 fn todo_on_scene_spawn() {}
 
-
 #[derive(Component)]
 pub struct UiMainRootNode;
 
 fn pre_setup(mut commands: Commands) {
-
     // The root of the UI, all UI elements will be children of this
     commands
         .ui_builder(UiRoot)
         .container(
-            (
-                NodeBundle {
-                    style: Style {
-                        width: Val::Percent(100.0),
-                        height: Val::Percent(100.0),
-                        flex_direction: FlexDirection::Column,
-                        justify_content: JustifyContent::SpaceBetween,
-                        ..default()
-                    },
+            (NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    flex_direction: FlexDirection::Column,
+                    justify_content: JustifyContent::SpaceBetween,
                     ..default()
                 },
-            ),
+                ..default()
+            },),
             |container| {
                 container.spawn((
                     NodeBundle {
@@ -99,20 +93,15 @@ fn pre_setup(mut commands: Commands) {
 #[derive(Component, Debug, Serialize, Deserialize, Reflect)]
 #[reflect(Component)]
 pub enum ItemType {
-    Object,   
+    Object,
     Collection,
     Scene,
 }
 
-fn print_item_type_added(
-    query: Query<(Entity, &ItemType, Option<&Name>), Added<ItemType>>,
-) {
+fn print_item_type_added(query: Query<(Entity, &ItemType, Option<&Name>), Added<ItemType>>) {
     for (entity, item_type, name) in query.iter() {
         if let Some(name) = name {
-            println!(
-                "Added {:?} to {} with name {:?}",
-                item_type, entity, name
-            );
+            println!("Added {:?} to {} with name {:?}", item_type, entity, name);
         } else {
             println!("Added {:?} to {:?}", item_type, entity);
         }

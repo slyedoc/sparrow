@@ -1,6 +1,12 @@
-use bevy::{prelude::*, reflect::{TypeInfo, TypeRegistration, VariantInfo}};
-use std::{fs::File, path::{Path, PathBuf}};
+use bevy::{
+    prelude::*,
+    reflect::{TypeInfo, TypeRegistration, VariantInfo},
+};
 use serde_json::{json, Map, Value};
+use std::{
+    fs::File,
+    path::{Path, PathBuf},
+};
 
 use crate::SparrowConfig;
 
@@ -8,9 +14,7 @@ use crate::SparrowConfig;
 pub struct AssetRoot(pub PathBuf);
 
 pub fn export_types(world: &mut World) {
-    let config = world
-        .get_resource::<SparrowConfig>()
-        .unwrap();
+    let config = world.get_resource::<SparrowConfig>().unwrap();
 
     let asset_root = world.resource::<AssetRoot>();
     let registry_save_path = Path::join(&asset_root.0, &config.save_path);
@@ -231,7 +235,6 @@ fn add_min_max(
     field_index: usize,
     variant_index: Option<usize>,
 ) -> Value {
-
     let Some((min, max)) = get_min_max(reg, field_index, variant_index) else {
         return val;
     };

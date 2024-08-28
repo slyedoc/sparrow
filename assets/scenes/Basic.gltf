@@ -48,24 +48,23 @@
 			},
 			"name":"Basic",
 			"nodes":[
-				0,
-				1,
-				2
+				4
 			]
 		}
 	],
 	"nodes":[
 		{
 			"extras":{
-				"bevy_components":"{\"basic::ItemType\": \"Scene\"}",
+				"bevy_components":"{\"basic::ItemType\": \"Object\"}",
 				"components_meta":{
 					"components":[
 						{
 							"short_name":"ItemType",
 							"long_name":"basic::ItemType",
 							"2D1CCE2570E8B0B90FE8F5DE6A487AA579243DE530FA6E98_ui":{
-								"selection":2
-							}
+								"selection":0
+							},
+							"enabled":1
 						}
 					]
 				}
@@ -115,6 +114,40 @@
 				4.958309173583984,
 				6.925790786743164
 			]
+		},
+		{
+			"children":[
+				0,
+				1,
+				2
+			],
+			"extras":{
+				"components_meta":{
+					"components":[
+						{
+							"short_name":"Aabb",
+							"long_name":"bevy_render::primitives::Aabb",
+							"4D789FA2529DC174C88154FA68941AA3E26115FDE83916A9_ui":{},
+							"enabled":1
+						},
+						{
+							"short_name":"ItemType",
+							"long_name":"basic::ItemType",
+							"2D1CCE2570E8B0B90FE8F5DE6A487AA579243DE530FA6E98_ui":{
+								"selection":1
+							}
+						}
+					]
+				},
+				"bevy_components":"{\"basic::ItemType\": \"Collection\"}"
+			},
+			"name":"Collection"
+		},
+		{
+			"children":[
+				3
+			],
+			"name":"Scene Collection"
 		}
 	],
 	"cameras":[

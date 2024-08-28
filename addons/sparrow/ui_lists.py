@@ -10,6 +10,8 @@ from bpy.props import (StringProperty, BoolProperty, IntProperty, FloatProperty,
 from bpy.types import (Material, Scene, Panel, Operator, PropertyGroup, UIList, Menu)
 
 
+        
+
 #------------------------------------------------------------------------------------
 #   UI Lists
 

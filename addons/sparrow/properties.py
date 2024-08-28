@@ -144,15 +144,18 @@ class SPARROW_PG_Settings(PropertyGroup):
         options={'HIDDEN'},
     ) # type: ignore
     gltf_format: EnumProperty(
+        options = set(), 
         name="GLTF Format",
         description="GLTF format",
-        items=[
-            ('GLB', 'glTF Binary (.glb)', 'Exports single file, with all data packed in binary form. Most efficient and protable, but more difficult to edit later'),
-            ('GLTF_SEPARATE', 'glTF Separate (.gltf + .bin + textures)', 'Exports multiple files, with separate JSON, binary and texture data. Easiest to edit later')
-        ],
+        items=GLTF_FORMATS,
         update= save_settings,
-        default='GLTF_SEPARATE'
-    ) # type: ignore
+        default='GLB'
+    )# type: ignore
+    #  EnumProperty(options = set(), name='Format', default='GLB', description='Output format', items=[
+    #     ('GLB', 'glTF Binary (.glb)', 'Exports single file, with all data packed in binary form. Most efficient and protable, but more difficult to edit later'),
+    #     ('GLTF_SEPARATE', 'glTF Separate (.gltf + .bin + textures)', 'Exports multiple files, with separate JSON, binary and texture data. Easiest to edit later')
+    # ]) 
+     
     ## not saved
     # Last scene for collection instance edit
     last_scene:  PointerProperty(name="last scene", type=Scene, options= set())
@@ -250,6 +253,7 @@ class ComponentsMeta(PropertyGroup):
 
 class SPARROW_PG_SceneProps(PropertyGroup):
     export: BoolProperty(name="Export", description="Automatically export scene as level", default = False, options = set()) # type: ignore
+    export_blueprints: BoolProperty(name="Blueprints", description="Automatically export anything marked as asset as blueprint", default = False, options = set()) # type: ignore
 
 
 # this is where we store the information for all available components

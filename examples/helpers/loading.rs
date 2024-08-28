@@ -11,7 +11,7 @@ pub(super) fn plugin(app: &mut App) {
             .continue_to(AppState::Playing)
             .track_assets(),
     )
-    .add_loading_state(LoadingState::new(AppState::Loading).load_collection::<GameAssets>())    
+    .add_loading_state(LoadingState::new(AppState::Loading).load_collection::<GameAssets>())
     .add_systems(Startup, open) // have to use startup here, OnEnter(AppState::Loading) fires before startup
     .add_systems(
         Update,
@@ -21,22 +21,21 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
-
 fn open(mut commands: Commands, root: Query<Entity, With<UiMainRootNode>>) {
-
     commands.spawn((
         Camera3dBundle {
             transform: Transform::from_translation(Vec3::new(0.0, 0.0, 5.0)),
             ..Default::default()
         },
-        StateScoped(AppState::Loading)
+        StateScoped(AppState::Loading),
     ));
 
     let Ok(root) = root.get_single() else {
         panic!("Failed to get root node");
     };
     let font = Handle::<Font>::default();
-    commands.ui_builder(root)
+    commands
+        .ui_builder(root)
         .column(|column| {
             column
                 .style()
@@ -94,10 +93,7 @@ fn open(mut commands: Commands, root: Query<Entity, With<UiMainRootNode>>) {
                 },
             );
         })
-        .insert((
-            Name::new("LoadingScreen"),
-            StateScoped(AppState::Loading)
-        ));
+        .insert((Name::new("LoadingScreen"), StateScoped(AppState::Loading)));
 }
 
 #[derive(Component)]

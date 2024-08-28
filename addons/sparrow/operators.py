@@ -3,6 +3,7 @@ import time
 from typing import Any, Dict
 from .utils import *
 from .properties import *
+from .blueprints import *
 
 import bpy
 import os
@@ -65,7 +66,8 @@ class SPARROW_OT_EditCollectionInstance(Operator):
             # Trigger Local View (isolation mode) to isolate the selected object
             # Hotkey for this is / (forward slash) and is a toggle, 
             # this way you can see rest of the scene if needed
-            bpy.ops.view3d.localview()
+            #bpy.ops.view3d.localview()
+
             # Zoom to the selected object
             bpy.ops.view3d.view_selected()
         else:
@@ -101,101 +103,225 @@ class SPARROW_OT_ExitCollectionInstance(Operator):
 class SPARROW_OT_ExportScenes(Operator):
     """Export Enabled Scenes"""      # Use this as a tooltip for menu items and buttons.
     bl_idname = "sparrow.export_scenes"        # Unique identifier for buttons and menu items to reference.
-    bl_label = "Export Scense"         # Display name in the interface.
+    bl_label = "Export Scenes"         # Display name in the interface.
     bl_options = {'REGISTER', 'UNDO'}  # Enable undo for the operator.
 
     def execute(self, context):       
         settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings  
-        p = os.path.join(settings.assets_path, SCENE_FOLDER)        
-        if not os.path.exists(p):
-            print(f"ERROR: Scene folder does not exist: {p}")
-            return {'CANCELLED'}
+        p = os.path.join(settings.assets_path, SCENE_FOLDER)
+        os.makedirs(p, exist_ok=True)
 
         for scene in bpy.data.scenes:
             scene_props: SPARROW_PG_SceneProps = scene.sparrow_scene_props
-
             if scene_props.export:                                
-                gltf_path = os.path.abspath(os.path.join(p, scene.name))
-                print(f"Exporting {scene.name} to {gltf_path + '.'}")
+                if settings.gltf_format == 'GLB':
+                    gltf_path = os.path.join(p, f"{scene.name}.glb")
+                else:
+                    gltf_path = os.path.join(p, f"{scene.name }")
+                
+                print(f"Exporting {scene.name} to {gltf_path}")
                 tmp_time = time.time()
 
-                export_scene(scene, {
-                    'filepath': gltf_path,
-                    'export_format': settings.gltf_format,
-                }) #{'export_materials': 'PLACEHOLDER'}
+                # we set our active scene to active
+                bpy.context.window.scene = scene
+                layer_collection = scene.view_layers['ViewLayer'].layer_collection
+                bpy.context.view_layer.active_layer_collection = recurLayerCollection(layer_collection, scene.collection.name)
+                
+                # find blueprints
+                blueprints_instances = scan_blueprint_instances(scene)
+
+                print(f"blueprints instances in scene {scene.name}: {len(blueprints_instances)}")
+                for inst in blueprints_instances:
+                    obj = inst.object
+                    col = inst.collection
+                    print(f"removing instance: {obj.name} -> {col.name}")
+                    # clear instance collection and set blueprint name
+                    obj.instance_collection = None
+                    if not 'blueprint' in obj:
+                        obj['blueprint'] = sanitize_file_name(col.name)
+
+                  # save active scene
+                active_scene = bpy.context.window.scene
+                active_collection = bpy.context.view_layer.active_layer_collection
+                active_mode = bpy.context.active_object.mode if bpy.context.active_object is not None else None
+                # we change the mode to object mode, otherwise the gltf exporter is not happy
+                if active_mode is not None and active_mode != 'OBJECT':
+                    print("setting to object mode", active_mode)
+                    bpy.ops.object.mode_set(mode='OBJECT')
+                # we set our active scene to be this one : this is needed otherwise the stand-in empties get generated in the wrong scene
+                bpy.context.window.scene = scene
+
+                area = [area for area in bpy.context.screen.areas if area.type == "VIEW_3D"][0]
+                region = [region for region in area.regions if region.type == 'WINDOW'][0]
+                with bpy.context.temp_override(scene=scene, area=area, region=region):
+                    # detect scene mistmatch
+                    scene_mismatch = bpy.context.scene.name != bpy.context.window.scene.name
+                    if scene_mismatch:
+                        show_message_box("Error in Gltf Exporter", icon="ERROR", lines=[f"Context scene mismatch, aborting: {bpy.context.scene.name} vs {bpy.context.window.scene.name}"])
+                    else:
+                        try:
+                            bpy.ops.export_scene.gltf(
+                                filepath=gltf_path,
+                                export_format=settings.gltf_format,
+                                will_save_settings=False,
+                                check_existing=False,
+
+                                export_apply=True, # prevents exporting shape keys
+                                export_cameras=True,
+                                export_lights=True,            
+                                export_yup=True,                    
+                                export_materials = 'EXPORT',                    
+                                export_extras=True, # For custom exported properties.
+                                
+                                export_animations=True,
+                                export_animation_mode='ACTIONS',
+                                export_gn_mesh=True,                    
+                                export_normals=True,
+                                export_texcoords = True,                  
+
+                                use_selection = False,
+                                use_active_collection_with_nested=False, # different for blueprints
+                                use_active_collection=False, # different for blueprints
+                                use_active_scene=True, 
+
+                                # filters                                                                                                        
+                                use_visible=False, 
+                                use_renderable=True,  
+                            )
+                        except Exception as error:
+                            print("failed to export scene gltf !", error) 
+                            show_message_box("Error in Gltf Exporter", icon="ERROR", lines=exception_traceback(error))
+                        finally:
+                            print("restoring state of scene")
+                            # restore everything
+                            for inst in blueprints_instances:
+                                obj = inst.object
+                                col = inst.collection
+
+                                print(f"adding back instance: {obj.name} -> {col.name}")
+                                obj.instance_collection = col
+
+                # reset active scene
+                bpy.context.window.scene = active_scene
+                # reset active collection
+                bpy.context.view_layer.active_layer_collection = active_collection
+                # reset mode
+                if active_mode is not None:
+                    bpy.ops.object.mode_set( mode = active_mode )
+
+               
+                         
+                
                 print(f"exported {scene.name} in {time.time() - tmp_time:6.2f}s")
 
         return {'FINISHED'}            # Lets Blender know the operator finished successfully.
 
 
-# export scene to gltf with io_scene_gltf
-def export_scene(scene: bpy.types.Scene, settings: Dict[str, Any]):
-    # expect settings to have filepath and export_format set
+class SPARROW_OT_ExportBlueprints(Operator):
+    """Export Enabled Blueprint Scenes"""      # Use this as a tooltip for menu items and buttons.
+    bl_idname = "sparrow.export_blueprint_scenes"        # Unique identifier for buttons and menu items to reference.
+    bl_label = "Export Blueprint Scenes"         # Display name in the interface.
+    bl_options = {'REGISTER', 'UNDO'}  # Enable undo for the operator.
 
-    #https://docs.blender.org/api/current/bpy.ops.export_scene.html#bpy.ops.export_scene.gltf        
-    export_settings = dict(   
-        **settings,
+    def execute(self, context):       
+        settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings  
+        p = os.path.join(settings.assets_path, BLUEPRINT_FOLDER)  
+        os.makedirs(p, exist_ok=True)
 
-        #log_info=False, # limit the output, was blowing up my console        
-        check_existing=False,
+        for scene in bpy.data.scenes:
+            scene_props: SPARROW_PG_SceneProps = scene.sparrow_scene_props
+            if scene_props.export_blueprints:
+                # scan scene for collections marked as assets
+                blueprints = scan_blueprints(scene)
+                
+                print(f"Exporting {len(blueprints)} blueprints for {scene.name}")
+                for col in blueprints:
+                    tmp_time = time.time()
 
-        # Export collections as empty, keeping full hierarchy. If an object is in multiple collections, it will be exported it only once, in the first collection it is found.
-        export_hierarchy_full_collections=False,
-        export_hierarchy_flatten_objs=False, # note: breakes any collection hierarchy
+                    if settings.gltf_format == 'GLB':
+                        gltf_path = os.path.join(p, f"{col.name}.glb")
+                    else:
+                        gltf_path = os.path.join(p, f"{col.name}")
+                    
+                    temp_scene = bpy.data.scenes.new(name=col.name+"_temp")
+                    print(f"Export blueprint {col.name} to {gltf_path}")
+                    temp_root_collection = temp_scene.collection
+                
+                    # save active scene
+                    active_scene = bpy.context.window.scene
+                    active_collection = bpy.context.view_layer.active_layer_collection
+                    active_mode = bpy.context.active_object.mode if bpy.context.active_object is not None else None
+                    # we change the mode to object mode, otherwise the gltf exporter is not happy
+                    if active_mode is not None and active_mode != 'OBJECT':
+                        print("setting to object mode", active_mode)
+                        bpy.ops.object.mode_set(mode='OBJECT')
+                    # we set our active scene to be this one : this is needed otherwise the stand-in empties get generated in the wrong scene
+                    bpy.context.window.scene = temp_scene
 
-        export_apply=True, # prevents exporting shape keys
-        export_cameras=True,
-        export_extras=True, # For custom exported properties.
-        export_lights=True,            
-        export_yup=True,
-        
-        export_animations=True,
-        export_animation_mode='ACTIONS',
-        export_gn_mesh=True,
-        export_attributes=True,
+                    area = [area for area in bpy.context.screen.areas if area.type == "VIEW_3D"][0]
+                    region = [region for region in area.regions if region.type == 'WINDOW'][0]
+                    with bpy.context.temp_override(scene=temp_scene, area=area, region=region):
+                        # detect scene mistmatch
+                        scene_mismatch = bpy.context.scene.name != bpy.context.window.scene.name
+                        if scene_mismatch:
+                            show_message_box("Error in Gltf Exporter", icon="ERROR", lines=[f"Context scene mismatch, aborting: {bpy.context.scene.name} vs {bpy.context.window.scene.name}"])
+                        else:
+                            set_active_collection(bpy.context.scene, temp_root_collection.name)
+                            # generate contents of temporary scene
+                            
+                            # link the collection to the scene
+                            temp_root_collection.children.link(col)
 
-        # use only one of these at a time
-        use_active_collection_with_nested=False,
-        use_active_collection=False,
-        use_active_scene=True, 
+                            try:
+                                bpy.ops.export_scene.gltf(
+                                    filepath=gltf_path,
+                                    export_format=settings.gltf_format,
+                                    will_save_settings=False,
+                                    check_existing=False,
 
-        # other filters
-        use_selection=False,
-        use_visible=True, # Export visible and hidden objects
-        use_renderable=False,    
-        export_normals=True,
-        
-        #export_draco_mesh_compression_enable=True,
-        #export_skins=True,
-        #export_morph=False,
-        #export_optimize_animation_size=False    
-        #export_keep_originals=True,
-        #export_shared_accessors=True,
-       
-        #export_texcoords=True, # used by material info and uv sets
-        #export_tangents=True, # used by meshlets
-        
-        #export_materials
-        #export_colors=True,
-        #use_mesh_edges
-        #use_mesh_vertices
-    )
-    # we set our active scene to be this one
-    bpy.context.window.scene = scene              
-    layer_collection = scene.view_layers['ViewLayer'].layer_collection
-    bpy.context.view_layer.active_layer_collection = recurLayerCollection(layer_collection, scene.collection.name)
-    bpy.ops.export_scene.gltf(**export_settings)
+                                    export_apply=True, # prevents exporting shape keys
+                                    export_cameras=True,
+                                    export_lights=True,            
+                                    export_yup=True,                    
+                                    export_materials = 'EXPORT',                    
+                                    export_extras=True, # For custom exported properties.
+                                    
+                                    export_animations=True,
+                                    export_animation_mode='ACTIONS',
+                                    export_gn_mesh=True,                    
+                                    export_normals=True,
+                                    export_texcoords = True,                  
+
+                                    use_selection = False,
+                                    use_active_collection_with_nested=True, # different for blueprints
+                                    use_active_collection=True, # different for blueprints
+                                    use_active_scene=True, 
+
+                                    # filters                                                                                                        
+                                    use_visible=False, 
+                                    use_renderable=True,  
+                                )
+                            except Exception as error:
+                                print("failed to export blueprint gltf !", error) 
+                                show_message_box("Error in Gltf Exporter", icon="ERROR", lines=exception_traceback(error))
+                            finally:
+                                print("restoring state of scene")
+                                # restore everything
+                                bpy.data.scenes.remove(temp_scene, do_unlink=True)
+
+                    # reset active scene
+                    bpy.context.window.scene = active_scene
+                    # reset active collection
+                    bpy.context.view_layer.active_layer_collection = active_collection
+                    # reset mode
+                    if active_mode is not None:
+                        bpy.ops.object.mode_set( mode = active_mode )
+                
+                    print(f"exported {col.name} in {time.time() - tmp_time:6.2f}s")
+
+        return {'FINISHED'}            # Lets Blender know the operator finished successfully.
 
 #Recursivly transverse layer_collection for a particular name
-def recurLayerCollection(layerColl, collName):
-    found = None
-    if (layerColl.name == collName):
-        return layerColl
-    for layer in layerColl.children:
-        found = recurLayerCollection(layer, collName)
-        if found:
-            return found
-
 
 
 class SPARROW_OT_LoadRegistry(Operator):
@@ -494,8 +620,9 @@ class SPARROW_OT_components_refresh_custom_properties_all(Operator):
             #print(f"refreshing custom properties for {total}: {progress} {object.name}")
 
             context.window_manager.custom_properties_from_components_progress_all = progress
-            # now force refresh the ui
-            bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+        
+        # now force refresh the ui
+        #bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
         context.window_manager.custom_properties_from_components_progress_all = -1.0
 
         return {'FINISHED'}
@@ -668,6 +795,8 @@ class GENERIC_LIST_OT_actions(Operator):
             #self.report({'INFO'}, info)
 
         return {"FINISHED"}
+
+
 
 
 #------------------------------------------------------------------------------------
@@ -2444,7 +2573,7 @@ class SPARROW_OT_BakeStart(Operator):
     bake_order = []
     final_material = None
     sampling = []
-    margin_original = 0
+    margin_original = 8
 
     def ab_bake_complete_multires(self):
         if not self.img.is_dirty:

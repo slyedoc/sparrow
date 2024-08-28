@@ -344,13 +344,25 @@ class SPARROW_PT_OutputPanel(SPARROW_PT_Output, bpy.types.Panel):
         col = layout.column_flow(columns=1)
         col.operator(SPARROW_OT_ExportScenes.bl_idname, icon="RENDER_STILL", text="Export Scenes")
         
-        col.label(text="Scenes")
+        col = layout.column_flow(columns=1)
+        col.operator(SPARROW_OT_ExportBlueprints.bl_idname, icon="PARTICLEMODE", text="Export Blueprints")
+        
+        
+        row = col.row()
+        row.label(text="Scenes")
+        row.label(text="Scene/Blueprint")        
+
         box = col.box() 
-   
+
+        col = box.column_flow(align=True)            
         for scene in bpy.data.scenes:       ## new 
-            row = box.row(align=True)            
+            
             scene_props = scene.sparrow_scene_props
-            row.prop(scene_props, "export", text=scene.name)   ## changed
+            row = col.row()            
+            row.label(text=scene.name)
+            row.prop(scene_props, "export", text="")   ## changed
+            row.prop(scene_props, "export_blueprints", text="")   ## changed
+            
 
         col.separator()
         

@@ -1,4 +1,7 @@
-use bevy::{gltf::GltfSceneExtras, prelude::*};
+use bevy::{
+    gltf::{GltfMaterialExtras, GltfSceneExtras},
+    prelude::*,
+};
 use std::path::PathBuf;
 
 mod registry;
@@ -13,6 +16,7 @@ pub struct SparrowPlugin {
     /// Path to save the registry schema, relative to the assets folder
     pub save_path: PathBuf,
     pub component_filter: SceneFilter,
+    pub ignore: Vec<String>,
 }
 
 impl Default for SparrowPlugin {
@@ -20,6 +24,7 @@ impl Default for SparrowPlugin {
         Self {
             save_path: PathBuf::from("../art/registry.json"),
             component_filter: SceneFilter::default(),
+            ignore: Vec::new(),
         }
     }
 }
@@ -28,6 +33,7 @@ impl Default for SparrowPlugin {
 pub struct SparrowConfig {
     pub save_path: PathBuf,
     pub component_filter: SceneFilter,
+    pub ignore: Vec<String>,
 }
 
 impl Plugin for SparrowPlugin {
@@ -49,14 +55,20 @@ impl Plugin for SparrowPlugin {
         app.add_systems(
             PostUpdate,
             (
-                spawn_gltf_extras::<GltfSceneExtras>,
-                spawn_gltf_extras::<GltfExtras>,
-            ),
+                //scene_extras_and_flatten,
+                //apply_deferred,
+                gltf_extras::<GltfSceneExtras>,
+                gltf_extras::<GltfExtras>,
+                gltf_extras::<GltfMaterialExtras>,
+            )
+                .chain()
+                .after(TransformSystem::TransformPropagate),
         );
 
         app.insert_resource(SparrowConfig {
             save_path: self.save_path.clone(),
             component_filter: self.component_filter.clone(),
+            ignore: self.ignore.clone(),
         });
     }
 }

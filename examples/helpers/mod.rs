@@ -1,14 +1,11 @@
-mod loading;
 mod camera_controller;
+mod loading;
 
 use bevy::prelude::*;
 use bevy_inspector_egui::bevy_egui::EguiContext;
 
 pub fn plugin(app: &mut App) {
-    app.add_plugins((
-    camera_controller::plugin,
-    loading::plugin,
-));
+    app.add_plugins((camera_controller::plugin, loading::plugin));
 }
 
 fn egui_mouse_free(egui_contexts: Query<&EguiContext>) -> bool {

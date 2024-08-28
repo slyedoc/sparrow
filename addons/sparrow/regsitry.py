@@ -31,29 +31,25 @@ def update_component(self, context, definition: TypeInfo, component_name):
         print("ERROR: no item selected")
         return
 
-    #print("updating component", component_name, item.name)      
+    update_disabled = item["__disable__update"] if "__disable__update" in item else False
+    #update_disabled = bevy.disable_all_object_updates or update_disabled # global settings
+    if update_disabled:
+        return
     
-    # if we have an object or collection
-    if item:
-        update_disabled = item["__disable__update"] if "__disable__update" in item else False
-        #update_disabled = bevy.disable_all_object_updates or update_disabled # global settings
-        if update_disabled:
-            return
-        
-        if item["components_meta"] is None:
-            print("ERROR: object does not have components", item.name)
-            return
-        
-        component_meta =  next(filter(lambda component: component["long_name"] == component_name, item.components_meta.components), None)
+    if item["components_meta"] is None:
+        print("ERROR: object does not have components", item.name)
+        return
+    
+    component_meta =  next(filter(lambda component: component["long_name"] == component_name, item.components_meta.components), None)
 
-        if component_meta is None:
-            print("ERROR: object does not have component", component_name, item.name)
-            return
+    if component_meta is None:
+        print("ERROR: object does not have component", component_name, item.name)
+        return
 
-        property_group_name = registry.get_propertyGroupName_from_longName(component_name)
-        property_group = getattr(component_meta, property_group_name)
-        # we use our helper to set the values
-        previous = json.loads(item['bevy_components'])
-        previous[component_name] = registry.property_group_value_to_custom_property_value(property_group, definition, None)
-        item['bevy_components'] = json.dumps(previous)
+    property_group_name = registry.get_propertyGroupName_from_longName(component_name)
+    property_group = getattr(component_meta, property_group_name)
+    # we use our helper to set the values
+    previous = json.loads(item['bevy_components'])
+    previous[component_name] = registry.property_group_value_to_custom_property_value(property_group, definition, None)
+    item['bevy_components'] = json.dumps(previous)
 

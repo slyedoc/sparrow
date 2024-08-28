@@ -4,6 +4,8 @@ import re
 from typing import Any
 import bpy
 import uuid
+import sys
+import inspect
 
 from bpy.props import (BoolProperty, StringProperty, CollectionProperty, IntProperty, PointerProperty, EnumProperty, FloatProperty,FloatVectorProperty )
 
@@ -18,10 +20,11 @@ ITEM_TYPES =(
     ('SCENE', "Scene", ""),
 )
 
-GLTF_FORMAT = (
+GLTF_FORMATS = (
     ('GLB', 'glTF Binary (.glb)', 'Exports single file, with all data packed in binary form. Most efficient and protable, but more difficult to edit later'),
-    ('GLTF_SEPARATE', 'glTF Separate (.gltf + .bin + textures)', 'Exports multiple files, with separate JSON, binary and texture data. Easiest to edit later')
-),
+    ('GLTF_SEPARATE', 'glTF Separate (.gltf + .bin + textures)', 'Exports multiple files, with separate JSON, binary and texture data. Easiest to edit later'),
+    ('GLTF_EMBEDDED', 'glTF Embedded (.gltf + .bin)', 'Exports with all data packed in JSON. Less efficient, but easier to edit later'),
+)
 
 VALUE_TYPES_DEFAULTS = {
     "string":" ",
@@ -141,6 +144,52 @@ CONVERSION_TABLES = {
 
     "bevy_render::color::Color": lambda value: "Rgba(red:"+str(value[0])+ ", green:"+str(value[1])+ ", blue:"+str(value[2])+ ", alpha:"+str(value[3])+   ")",
 }
+
+def recurLayerCollection(layerColl, collName):
+    found = None
+    if (layerColl.name == collName):
+        return layerColl
+    for layer in layerColl.children:
+        found = recurLayerCollection(layer, collName)
+        if found:
+            return found
+        
+def set_active_collection(scene, collection_name):
+    layer_collection = scene.view_layers['ViewLayer'].layer_collection
+    layerColl = recurLayerCollection(layer_collection, collection_name)
+    # set active collection to the collection
+    bpy.context.view_layer.active_layer_collection = layerColl
+
+def full_stack_lines(tb=None):
+    text = []
+    try:
+        if tb is None:
+            tb = sys.exc_info()[2]
+
+        text.append('Traceback (most recent call last):')
+        for item in reversed(inspect.getouterframes(tb.tb_frame)[1:]):
+            text.append('   File "{1}", line {2}, in {3}\n'.format(*item))
+            for line in item[4]:
+                text.append('       ' + line.lstrip())
+        for item in inspect.getinnerframes(tb):
+            text.append('   File "{1}", line {2}, in {3}\n'.format(*item))
+            for line in item[4]:
+                text.append('       ' + line.lstrip())
+    except: pass
+    return text
+
+def exception_traceback(error):
+    traceback_formated = [str(error)]
+    traceback_formated += full_stack_lines()
+    return traceback_formated
+
+def show_message_box(title = "Message Box", icon = 'INFO', lines=""):
+    myLines=lines
+    def draw(self, context):
+        for n in myLines:
+            self.layout.label(text=n)
+    bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
+
 
 def is_def_value_type(definition):
     if definition == None:
@@ -370,6 +419,7 @@ def obj_bake_ready(self, context, target_obj, selected_obj):
         if obj.hide_render or obj.hide_viewport:
             if abp.ab_report_bake_error:
                 self.report({'ERROR'}, f"Auto Bake: Object '{obj.name}' must be visible in the viewport and must be enabled for renders.")
+                print(f"ERROR: Auto Bake: Object '{obj.name}' must be visible in the viewport and must be enabled for renders.")
             return 'Object is disabled in the viewport!'
 
 # Filepath
@@ -526,6 +576,7 @@ def export_texture(self, context, img, export_name, type, label, prefix):
 
 
 SCENE_FOLDER = 'scenes'
+BLUEPRINT_FOLDER = 'blueprints'
 
 bake_status = "IDLE"
 is_udim_bake = False

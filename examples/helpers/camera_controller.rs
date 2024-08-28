@@ -10,11 +10,8 @@ use bevy::prelude::*;
 use bevy::window::CursorGrabMode;
 
 pub(crate) fn plugin(app: &mut App) {
-    app.add_systems(
-        Update, run_camera_controller.run_if(super::egui_mouse_free)
-    );
+    app.add_systems(Update, run_camera_controller.run_if(super::egui_mouse_free));
 }
-
 
 /// Based on Valorant's default sensitivity, not entirely sure why it is exactly 1.0 / 180.0,
 /// but I'm guessing it is a misunderstanding between degrees/radians and then sticking with
@@ -70,7 +67,6 @@ impl Default for CameraController {
     }
 }
 
-
 #[allow(clippy::too_many_arguments)]
 fn run_camera_controller(
     time: Res<Time>,
@@ -83,7 +79,6 @@ fn run_camera_controller(
     mut mouse_cursor_grab: Local<bool>,
     mut query: Query<(&mut Transform, &mut CameraController), With<Camera>>,
 ) {
-
     let dt = time.delta_seconds();
 
     if let Ok((mut transform, mut controller)) = query.get_single_mut() {

@@ -51,6 +51,7 @@ from .menu import *
 classes = [
     # Operators
     SPARROW_OT_ExportScenes,
+    SPARROW_OT_ExportBlueprints,
     SPARROW_OT_EditCollectionInstance,
     SPARROW_OT_ExitCollectionInstance,
     SPARROW_OT_OpenAssetsFolderBrowser,
@@ -80,7 +81,6 @@ classes = [
     SPARROW_PG_Component,    
     SPARROW_PG_ComponentDropdown,
     SPARROW_PG_Settings,
-
 
     # Properties
     SPARROW_PG_Autobake, SPARROW_PG_Bake, SPARROW_PG_BakeQueue, SPARROW_PG_UDIMType, SPARROW_PG_SourceObjects, SPARROW_PG_ImageExport, SPARROW_PG_ObjectQueue,
@@ -156,15 +156,14 @@ def register():
     bpy.types.Scene.autobake_objectqueuelist_index = IntProperty(name="Object Bake Item", default=0, update=bake_result)
 
     # Auto Bake end
-
     bpy.app.handlers.load_post.append(post_load)
     bpy.types.VIEW3D_MT_object.append(edit_collection_menu)
     bpy.types.VIEW3D_MT_object_context_menu.append(edit_collection_menu)
     bpy.types.VIEW3D_MT_object.append(exit_collection_instance)
     bpy.types.VIEW3D_MT_object_context_menu.append(exit_collection_instance)
 
-def unregister():
-    
+def unregister():    
+
     if bpy.app.timers.is_registered(watch_registry):
         bpy.app.timers.unregister(watch_registry)
 
@@ -176,6 +175,9 @@ def unregister():
     bpy.types.VIEW3D_MT_object.remove(exit_collection_instance)
     bpy.types.VIEW3D_MT_object_context_menu.remove(exit_collection_instance)
     
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+
 
     del bpy.types.WindowManager.sparrow_settings
     del bpy.types.Scene.sparrow_scene_props
