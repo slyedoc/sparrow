@@ -110,12 +110,22 @@ class SPARROW_OT_ExportScenes(Operator):
         settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings  
         p = os.path.join(settings.assets_path, SCENE_FOLDER)
         os.makedirs(p, exist_ok=True)
+        
+        # save active scene
+        active_scene = bpy.context.window.scene
+        active_collection = bpy.context.view_layer.active_layer_collection
+        active_mode = bpy.context.active_object.mode if bpy.context.active_object is not None else None
+        # we change the mode to object mode, otherwise the gltf exporter is not happy
+        if active_mode is not None and active_mode != 'OBJECT':
+            print("setting to object mode", active_mode)
+            bpy.ops.object.mode_set(mode='OBJECT')
 
         for scene in bpy.data.scenes:
             scene_props: SPARROW_PG_SceneProps = scene.sparrow_scene_props
             if scene_props.export:                                
                 if settings.gltf_format == 'GLB':
                     gltf_path = os.path.join(p, f"{scene.name}.glb")
+                    os.remove(gltf_path) if os.path.exists(gltf_path) else None
                 else:
                     gltf_path = os.path.join(p, f"{scene.name }")
                 
@@ -140,17 +150,6 @@ class SPARROW_OT_ExportScenes(Operator):
                     if not 'blueprint' in obj:
                         obj['blueprint'] = sanitize_file_name(col.name)
 
-                  # save active scene
-                active_scene = bpy.context.window.scene
-                active_collection = bpy.context.view_layer.active_layer_collection
-                active_mode = bpy.context.active_object.mode if bpy.context.active_object is not None else None
-                # we change the mode to object mode, otherwise the gltf exporter is not happy
-                if active_mode is not None and active_mode != 'OBJECT':
-                    print("setting to object mode", active_mode)
-                    bpy.ops.object.mode_set(mode='OBJECT')
-                # we set our active scene to be this one : this is needed otherwise the stand-in empties get generated in the wrong scene
-                bpy.context.window.scene = scene
-
                 area = [area for area in bpy.context.screen.areas if area.type == "VIEW_3D"][0]
                 region = [region for region in area.regions if region.type == 'WINDOW'][0]
                 with bpy.context.temp_override(scene=scene, area=area, region=region):
@@ -170,7 +169,7 @@ class SPARROW_OT_ExportScenes(Operator):
                                 export_cameras=True,
                                 export_lights=True,            
                                 export_yup=True,                    
-                                export_materials = 'EXPORT',                    
+                                export_materials='EXPORT',                    
                                 export_extras=True, # For custom exported properties.
                                 
                                 export_animations=True,
@@ -201,19 +200,16 @@ class SPARROW_OT_ExportScenes(Operator):
                                 print(f"adding back instance: {obj.name} -> {col.name}")
                                 obj.instance_collection = col
 
-                # reset active scene
-                bpy.context.window.scene = active_scene
-                # reset active collection
-                bpy.context.view_layer.active_layer_collection = active_collection
-                # reset mode
-                if active_mode is not None:
-                    bpy.ops.object.mode_set( mode = active_mode )
-
-               
-                         
-                
                 print(f"exported {scene.name} in {time.time() - tmp_time:6.2f}s")
 
+        # reset active scene
+        bpy.context.window.scene = active_scene
+        # reset active collection
+        bpy.context.view_layer.active_layer_collection = active_collection
+        # reset mode
+        if active_mode is not None:
+            bpy.ops.object.mode_set( mode = active_mode )
+            
         return {'FINISHED'}            # Lets Blender know the operator finished successfully.
 
 
@@ -227,6 +223,16 @@ class SPARROW_OT_ExportBlueprints(Operator):
         settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings  
         p = os.path.join(settings.assets_path, BLUEPRINT_FOLDER)  
         os.makedirs(p, exist_ok=True)
+
+        # save active scene
+        active_scene = bpy.context.window.scene
+        active_collection = bpy.context.view_layer.active_layer_collection
+        active_mode = bpy.context.active_object.mode if bpy.context.active_object is not None else None
+        # we change the mode to object mode, otherwise the gltf exporter is not happy
+        if active_mode is not None and active_mode != 'OBJECT':
+            print("setting to object mode", active_mode)
+            bpy.ops.object.mode_set(mode='OBJECT')
+
 
         for scene in bpy.data.scenes:
             scene_props: SPARROW_PG_SceneProps = scene.sparrow_scene_props
@@ -247,14 +253,6 @@ class SPARROW_OT_ExportBlueprints(Operator):
                     print(f"Export blueprint {col.name} to {gltf_path}")
                     temp_root_collection = temp_scene.collection
                 
-                    # save active scene
-                    active_scene = bpy.context.window.scene
-                    active_collection = bpy.context.view_layer.active_layer_collection
-                    active_mode = bpy.context.active_object.mode if bpy.context.active_object is not None else None
-                    # we change the mode to object mode, otherwise the gltf exporter is not happy
-                    if active_mode is not None and active_mode != 'OBJECT':
-                        print("setting to object mode", active_mode)
-                        bpy.ops.object.mode_set(mode='OBJECT')
                     # we set our active scene to be this one : this is needed otherwise the stand-in empties get generated in the wrong scene
                     bpy.context.window.scene = temp_scene
 
@@ -283,7 +281,7 @@ class SPARROW_OT_ExportBlueprints(Operator):
                                     export_cameras=True,
                                     export_lights=True,            
                                     export_yup=True,                    
-                                    export_materials = 'EXPORT',                    
+                                    export_materials = 'PLACEHOLDER',                    
                                     export_extras=True, # For custom exported properties.
                                     
                                     export_animations=True,
@@ -305,20 +303,19 @@ class SPARROW_OT_ExportBlueprints(Operator):
                                 print("failed to export blueprint gltf !", error) 
                                 show_message_box("Error in Gltf Exporter", icon="ERROR", lines=exception_traceback(error))
                             finally:
-                                print("restoring state of scene")
                                 # restore everything
                                 bpy.data.scenes.remove(temp_scene, do_unlink=True)
 
-                    # reset active scene
-                    bpy.context.window.scene = active_scene
-                    # reset active collection
-                    bpy.context.view_layer.active_layer_collection = active_collection
-                    # reset mode
-                    if active_mode is not None:
-                        bpy.ops.object.mode_set( mode = active_mode )
-                
                     print(f"exported {col.name} in {time.time() - tmp_time:6.2f}s")
 
+        # reset active scene
+        bpy.context.window.scene = active_scene
+        # reset active collection
+        bpy.context.view_layer.active_layer_collection = active_collection
+        # reset mode
+        if active_mode is not None:
+            bpy.ops.object.mode_set( mode = active_mode )
+                
         return {'FINISHED'}            # Lets Blender know the operator finished successfully.
 
 #Recursivly transverse layer_collection for a particular name

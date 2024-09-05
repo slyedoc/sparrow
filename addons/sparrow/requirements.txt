@@ -1,2 +1,2 @@
 io_scene_gltf2
-fake-bpy-module-4.1
+fake-bpy-module-4.1==0.0.1

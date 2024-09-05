@@ -131,8 +131,6 @@ pub fn gltf_extras<T: Component + Clone + GltfExtraType>(world: &mut World) {
                         } else {
                             error!("Unable to get reflect component for {:?}, did you forget to add #[reflect(Component)] to your component?", type_registration.type_info());
                         }
-                            
-                            
                     }
                 }
             });
@@ -216,19 +214,14 @@ fn components_string_to_components(
         let mut deserializer = ron::Deserializer::from_str(ron_string.as_str())
             .expect("deserialzer should have been generated from string");
         let reflect_deserializer = ReflectDeserializer::new(type_registry);
-        let component = reflect_deserializer
-            .deserialize(&mut deserializer)
-            .unwrap_or_else(|_| {
-                panic!(
-                    "failed to deserialize component {} with value: {:?}",
-                    name, value
-                )
-            });
-
-        debug!("component {:?}", component);
-        debug!("real type {:?}", component.get_represented_type_info());
-        components.push((component, type_registration.clone()));
-        debug!("found type registration for {}", capitalized_type_name);
+        if let Ok(component) = reflect_deserializer.deserialize(&mut deserializer) {
+            components.push((component, type_registration.clone()));
+        } else {
+            warn!(
+                "failed to deserialize component on {:?} - {} with value: {:?}",
+                entity_name, name, value,
+            )
+        }
     } else {
         // Components_meta self made, rest are 3rd party plugins in blender I have
         if !ignore.iter().any(|s| capitalized_type_name.contains(s)) {
@@ -248,7 +241,7 @@ fn bevy_components_string_to_components(
 ) {
     let lookup: HashMap<String, Value> = ron::from_str(&parsed_value).unwrap();
     for (key, value) in lookup.into_iter() {
-        info!("----- {:?}: {:?}", &key, &value);
+        //info!("----- {:?}: {:?}", &key, &value);
         let parsed_value: String = match value.clone() {
             Value::String(str) => str,
             _ => ron::to_string(&value).unwrap().to_string(),
@@ -268,10 +261,11 @@ fn bevy_components_string_to_components(
                 .expect("deserialzer should have been generated from string");
             let reflect_deserializer = ReflectDeserializer::new(type_registry);
             let Ok(component) = reflect_deserializer.deserialize(&mut deserializer) else {
-                panic!(
+                warn!(
                     "failed to deserialize component on {:?} - {} with value: {:?}",
                     name, key, value,
-                )
+                );
+                return;
             };
 
             debug!("component {:?}", component);

@@ -38,6 +38,12 @@ pub struct SparrowConfig {
 
 impl Plugin for SparrowPlugin {
     fn build(&self, app: &mut App) {
+        app.insert_resource(SparrowConfig {
+            save_path: self.save_path.clone(),
+            component_filter: self.component_filter.clone(),
+            ignore: self.ignore.clone(),
+        });
+
         #[cfg(feature = "registry")]
         {
             // hack to get the asset path, could be removed?
@@ -64,11 +70,5 @@ impl Plugin for SparrowPlugin {
                 .chain()
                 .after(TransformSystem::TransformPropagate),
         );
-
-        app.insert_resource(SparrowConfig {
-            save_path: self.save_path.clone(),
-            component_filter: self.component_filter.clone(),
-            ignore: self.ignore.clone(),
-        });
     }
 }
