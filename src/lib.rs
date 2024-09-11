@@ -1,5 +1,5 @@
 use bevy::{
-    gltf::{GltfMaterialExtras, GltfSceneExtras},
+    gltf::GltfMaterialExtras,
     prelude::*,
 };
 use std::path::PathBuf;
@@ -36,13 +36,26 @@ pub struct SparrowConfig {
     pub ignore: Vec<String>,
 }
 
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+pub enum SceneSet {
+    Extras,
+    Post  
+}
+
+
 impl Plugin for SparrowPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(SparrowConfig {
             save_path: self.save_path.clone(),
             component_filter: self.component_filter.clone(),
             ignore: self.ignore.clone(),
-        });
+        })
+        .configure_sets(
+            PostUpdate,
+            // chain() will ensure sets run in the order they are listed
+            (SceneSet::Extras, SceneSet::Post).chain()
+                .after(TransformSystem::TransformPropagate),
+        );
 
         #[cfg(feature = "registry")]
         {
@@ -61,14 +74,16 @@ impl Plugin for SparrowPlugin {
         app.add_systems(
             PostUpdate,
             (
-                //scene_extras_and_flatten,
+                #[cfg(feature="flatten_scene")]                            
+                scene_extras_and_flatten,
                 //apply_deferred,
-                gltf_extras::<GltfSceneExtras>,
+                #[cfg(not(feature="flatten_scene"))]
+                gltf_extras::<bevy::gltf::GltfSceneExtrasGltfSceneExtras>,
                 gltf_extras::<GltfExtras>,
                 gltf_extras::<GltfMaterialExtras>,
             )
                 .chain()
-                .after(TransformSystem::TransformPropagate),
+                .in_set(SceneSet::Extras),
         );
     }
 }

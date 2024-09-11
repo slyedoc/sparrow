@@ -1511,7 +1511,6 @@ class SPARROW_PG_Autobake(PropertyGroup):
 # Settings
 
 # Margin
-    
     ab_adaptive_margin : BoolProperty(name='Adaptive Margin', default=False, description="Automatically adjust the margin size based on the baked texture's scale. The currently set margin size will be used for textures with a resolution of 1024px, and will be correspondingly adjusted for different texture sizes", options = set())  # type: ignore
 
 # Selected to Active
@@ -1666,7 +1665,7 @@ class SPARROW_PG_Autobake(PropertyGroup):
 
 # Objects
     
-    ab_final_object : BoolProperty(name='Final Object', default=False, description='Duplicate the baked object and assign the final material to it (final material can only be assigned to the object if it is set to be created)', options = set())  # type: ignore
+    ab_final_object : BoolProperty(name='Final Object', default=True, description='Duplicate the baked object and assign the final material to it (final material can only be assigned to the object if it is set to be created)', options = set())  # type: ignore
     ab_final_collection : StringProperty(name='Collection', default='', description="Create a new collection with the set name for the final object(s). If left empty, no new collection will be created, and each final object will be located in the same collection as its original object", options = set())  # type: ignore
     ab_final_collection_color : EnumProperty(name='Collection Color', default='NONE', description='Final object collection color', options = set(), items=[
         ('NONE', 'Collection', '', 'OUTLINER_COLLECTION', 0),
@@ -1681,10 +1680,10 @@ class SPARROW_PG_Autobake(PropertyGroup):
     ab_object_location : EnumProperty(name='Object Location', default='Copy', items=[('Copy', 'Copy', 'Copy the location of the baked object', 'COPYDOWN', 0), ('Clear', 'Clear', 'Object will be placed to the world origin', 'LOOP_BACK', 1)], description='Location of the final object', options = set())  # type: ignore
     ab_offset_direction : EnumProperty(options = set(), name='Offset Direction', default='Y', items=[("X", "X", ""), ("Y", "Y", ""), ("Z", "Z", "")], description='Direction to offset the final object')  # type: ignore
     ab_object_offset : FloatProperty(options = set(), name='Offset', default=0.0, subtype='DISTANCE', description='Distance to offset the final object')  # type: ignore
-    ab_object_keep_name : EnumProperty(name='Keep Namme', description="Set which object should have the original name and which should have it with the differentiator. If the object is set to be exported, it will always be without the differentiator, regardless of this setting", default='Final', options = set(), items=[
+    ab_object_keep_name : EnumProperty(name='Keep Namme', description="Set which object should have the original name and which should have it with the differentiator. If the object is set to be exported, it will always be without the differentiator, regardless of this setting", default='Original', options = set(), items=[
         ('Final', 'Final', "The final object will take the name of the original object, and the differentiator will be added to the original object's name"),
         ('Original', 'Original', "Keep the name for the original object, and add the differentiator to the final object")])  # type: ignore
-    ab_object_differentiator : StringProperty(name='Differentiator', default='_', description="Differentiator for the selected object. This text will be added to the end of the object's name, this will help Auto Bake to avoid name conflicts for objects and materials", options = set())  # type: ignore
+    ab_object_differentiator : StringProperty(name='Differentiator', default='Baked', description="Differentiator for the selected object. This text will be added to the end of the object's name, this will help Auto Bake to avoid name conflicts for objects and materials", options = set())  # type: ignore
     
 # Export Object
 

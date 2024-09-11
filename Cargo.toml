@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-default = ["dev"]
+default = ["dev", "flatten_scene"]
+flatten_scene = []
 dev = [
  "registry",
  "bevy_egui/immutable_ctx",
