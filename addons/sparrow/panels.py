@@ -36,14 +36,14 @@ def draw_components(item, layout, settings: SPARROW_PG_Settings, registry: Compo
     layout.separator()
 
     col = layout.column_flow(columns=2)
-    row = col.row(align=True)        
+    row = col.row(align=True)       
     row.prop(settings.components_dropdown, "filter", text="Filter")
     
-    # row = col.row(align=True)
-    # op = row.operator(SPARROW_OT_components_refresh_custom_properties_all.bl_idname, text="Refresh", icon="SYNTAX_ON")
+    row = col.row(align=True)
+    op = row.operator(SPARROW_OT_components_refresh_custom_properties_all.bl_idname, text="Refresh", icon="SYNTAX_ON")
     
     row =  col.row(align=True)
-    op = row.operator(SPARROW_OT_PasteComponent.bl_idname, text="Paste component ("+settings.copied_source_component_name+")", icon="PASTEDOWN")
+    op = row.operator(SPARROW_OT_PasteComponent.bl_idname, text="Paste: "+settings.copied_source_component_name+"", icon="PASTEDOWN")
     op.target_item_name = item_name
     op.target_item_type = item_type
     

@@ -248,6 +248,9 @@ class SPARROW_OT_ExportBlueprints(Operator):
                     
                     # we set our active scene to temp: this is needed otherwise the stand-in empties get generated in the wrong scene
                     temp_scene = bpy.data.scenes.new(name=col.name+"_temp")
+                    # adding scene prop so GltfSceneExtra is added, lets us flatten the scene
+                    temp_scene["sparrow_blueprint"] = True
+                    
                     temp_root_collection = temp_scene.collection
                     bpy.context.window.scene = temp_scene
 

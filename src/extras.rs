@@ -64,41 +64,42 @@ pub fn scene_extras_and_flatten(world: &mut World) {
             Vec<Entity>,
             Option<Name>,
         )>>();
-    if !extras.is_empty() {
-        world.resource_scope(|world, config: Mut<SparrowConfig>| {
-            world.resource_scope(|world, type_registry: Mut<AppTypeRegistry>| {
-                let type_registry = type_registry.read();
-                for (entity, extra, parent, children, name) in &extras {
-                    let value = extra.value();
-                    let reflect_components = ronstring_to_reflect_component(
-                        &value,
-                        &type_registry,
-                        name.clone(),
-                        &config.ignore,
-                    );
 
-                    for (component, type_registration) in reflect_components {
-                        let mut entity_mut = world.entity_mut(*parent); // using parent here instead of our scene root
-                        type_registration
-                            .data::<ReflectComponent>()
-                            .expect("Unable to reflect component")
-                            .insert(&mut entity_mut, &*component, &type_registry);
-                    }
+    world.resource_scope(|world, config: Mut<SparrowConfig>| {
+        world.resource_scope(|world, type_registry: Mut<AppTypeRegistry>| {
+            let type_registry = type_registry.read();
+            for (entity, extra, parent, children, name) in &extras {
+                let value = extra.value();
+                let reflect_components = ronstring_to_reflect_component(
+                    &value,
+                    &type_registry,
+                    name.clone(),
+                    &config.ignore,
+                );
 
-                    // delete scene root and scene collection
-                    for child in children {
-                        //     let grand_children = world.get::<Children>(*child).unwrap().to_vec();
-                        //     for gc in grand_children {
-                        //         world.entity_mut(gc).set_parent(*parent);
-                        //     }
-                        //     world.entity_mut(*child).despawn_recursive();
-                        world.entity_mut(*child).set_parent(*parent);
-                    }
-                    world.entity_mut(*entity).despawn_recursive();
+                for (component, type_registration) in reflect_components {
+                    let mut entity_mut = world.entity_mut(*parent); // using parent here instead of our scene root
+                    type_registration
+                        .data::<ReflectComponent>()
+                        .expect("Unable to reflect component")
+                        .insert(&mut entity_mut, &*component, &type_registry);
                 }
-            });
+
+                // delete scene root and scene collection
+                for child in children {
+                    //     let grand_children = world.get::<Children>(*child).unwrap().to_vec();
+                    //     for gc in grand_children {
+                    //         world.entity_mut(gc).set_parent(*parent);
+                    //     }
+                    //     world.entity_mut(*child).despawn_recursive();
+                    world.entity_mut(*child).set_parent(*parent);
+
+                }
+                world.entity_mut(*entity).despawn_recursive();
+                info!("Flattened scene: {:?}", world.get::<Name>(*parent));
+            }
         });
-    }
+    });
 }
 
 // parse gltf extras on added and spawn the components
