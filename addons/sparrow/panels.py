@@ -22,7 +22,20 @@ def draw_components(item, layout, settings: SPARROW_PG_Settings, registry: Compo
         layout.label(text ="No components found")
         return
 
+    col = layout.column_flow(columns=2)
+    row = col.row(align=True)       
+    row.prop(settings.components_dropdown, "filter", text="Filter")
+    
+    row = col.row(align=True)
+    
+    op = row.operator(SPARROW_OT_PasteComponent.bl_idname, text="Paste: "+settings.copied_source_component_name+"", icon="PASTEDOWN")
+    op.target_item_name = item_name
+    op.target_item_type = item_type
+
+    op = row.operator(SPARROW_OT_components_refresh_custom_properties_all.bl_idname, text="Refresh", icon="SYNTAX_ON")
+
     col = layout.column()
+    
     row = col.row()
     row.prop(settings.components_dropdown, "list", text="")
     
@@ -35,17 +48,7 @@ def draw_components(item, layout, settings: SPARROW_PG_Settings, registry: Compo
     
     layout.separator()
 
-    col = layout.column_flow(columns=2)
-    row = col.row(align=True)       
-    row.prop(settings.components_dropdown, "filter", text="Filter")
-    
-    row = col.row(align=True)
-    op = row.operator(SPARROW_OT_components_refresh_custom_properties_all.bl_idname, text="Refresh", icon="SYNTAX_ON")
-    
-    row =  col.row(align=True)
-    op = row.operator(SPARROW_OT_PasteComponent.bl_idname, text="Paste: "+settings.copied_source_component_name+"", icon="PASTEDOWN")
-    op.target_item_name = item_name
-    op.target_item_type = item_type
+
     
     
     row.enabled = registry.has_type_infos() and settings.copied_source_item_name != '' 
@@ -180,7 +183,7 @@ def draw_propertyGroup( propertyGroup, layout, nesting =[], rootName=None, item_
             row = list_column.row()
             draw_propertyGroup(item, row, nesting, rootName, item_type, enabled=enabled)
             icon = 'CHECKBOX_HLT' if list_index == index else 'CHECKBOX_DEHLT'
-            op = row.operator('blenvy.component_list_actions', icon=icon, text="")
+            op = row.operator('sparrow.component_list_actions', icon=icon, text="")
             op.action = 'SELECT'
             op.component_name = rootName
             op.property_group_path = json.dumps(nesting)
@@ -191,7 +194,7 @@ def draw_propertyGroup( propertyGroup, layout, nesting =[], rootName=None, item_
         #various control buttons
         buttons_column.separator()
         row = buttons_column.row()
-        op = row.operator('blenvy.component_list_actions', icon='ADD', text="")
+        op = row.operator('sparrow.component_list_actions', icon='ADD', text="")
         op.action = 'ADD'
         op.component_name = rootName
         op.property_group_path = json.dumps(nesting)
@@ -199,7 +202,7 @@ def draw_propertyGroup( propertyGroup, layout, nesting =[], rootName=None, item_
         op.item_name = item_name
 
         row = buttons_column.row()
-        op = row.operator('blenvy.component_list_actions', icon='REMOVE', text="")
+        op = row.operator('sparrow.component_list_actions', icon='REMOVE', text="")
         op.action = 'REMOVE'
         op.component_name = rootName
         op.property_group_path = json.dumps(nesting)
@@ -208,7 +211,7 @@ def draw_propertyGroup( propertyGroup, layout, nesting =[], rootName=None, item_
 
         buttons_column.separator()
         row = buttons_column.row()
-        op = row.operator('blenvy.component_list_actions', icon='TRIA_UP', text="")
+        op = row.operator('sparrow.component_list_actions', icon='TRIA_UP', text="")
         op.action = 'UP'
         op.component_name = rootName
         op.property_group_path = json.dumps(nesting)
@@ -217,7 +220,7 @@ def draw_propertyGroup( propertyGroup, layout, nesting =[], rootName=None, item_
 
 
         row = buttons_column.row()
-        op = row.operator('blenvy.component_list_actions', icon='TRIA_DOWN', text="")
+        op = row.operator('sparrow.component_list_actions', icon='TRIA_DOWN', text="")
         op.action = 'DOWN'
         op.component_name = rootName
         op.property_group_path = json.dumps(nesting)
@@ -239,7 +242,7 @@ def draw_propertyGroup( propertyGroup, layout, nesting =[], rootName=None, item_
             values_setter = getattr(propertyGroup, "values_setter")
             draw_propertyGroup(values_setter, row, nesting, rootName, item_type, item_name, enabled=enabled)
 
-            op = row.operator('blenvy.component_map_actions', icon='ADD', text="")
+            op = row.operator('sparrow.component_map_actions', icon='ADD', text="")
             op.action = 'ADD'
             op.component_name = rootName
             op.property_group_path = json.dumps(nesting)
@@ -258,7 +261,7 @@ def draw_propertyGroup( propertyGroup, layout, nesting =[], rootName=None, item_
                 value = values_list[index]
                 draw_propertyGroup(value, row, nesting, rootName, item_type, item_name, enabled=enabled)
 
-                op = row.operator('blenvy.component_map_actions', icon='REMOVE', text="")
+                op = row.operator('sparrow.component_map_actions', icon='REMOVE', text="")
                 op.action = 'REMOVE'
                 op.component_name = rootName
                 op.property_group_path = json.dumps(nesting)

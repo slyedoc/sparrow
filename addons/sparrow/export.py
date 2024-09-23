@@ -22,8 +22,8 @@ def export_gltf(settings: SPARROW_PG_Settings, gltf_path: str, blueprint: bool):
             export_texcoords=True,
 
             use_selection = False,
-            use_active_collection_with_nested=False, # different for blueprints
-            use_active_collection=False, # different for blueprints
+            use_active_collection_with_nested=True, # different for blueprints
+            use_active_collection=True, # different for blueprints
             use_active_scene=True, 
             # filters                                                                                                        
             use_visible=True,

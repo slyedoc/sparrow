@@ -240,7 +240,11 @@ fn bevy_components_string_to_components(
     components: &mut Vec<(Box<dyn Reflect>, TypeRegistration)>,
     name: &Option<Name>,
 ) {
-    let lookup: HashMap<String, Value> = ron::from_str(&parsed_value).unwrap();
+    let Ok(lookup)= ron::from_str::<HashMap<String, Value>>(&parsed_value) else {
+        warn!("failed to parse bevy_components on {:?}", name);
+        return;
+    };
+
     for (key, value) in lookup.into_iter() {
         //info!("----- {:?}: {:?}", &key, &value);
         let parsed_value: String = match value.clone() {

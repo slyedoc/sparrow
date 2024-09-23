@@ -64,10 +64,12 @@ classes = [
     SPARROW_OT_ToggleComponentVisibility,
     SPARROW_OT_components_refresh_custom_properties_all,
 
-    Generic_LIST_OT_AddItem,
-    Generic_LIST_OT_RemoveItem,
-    Generic_LIST_OT_SelectItem,
-    GENERIC_LIST_OT_actions,
+    SPARROW_OT_component_map_actions,
+    SPARROW_OT_component_list_actions,
+    # Generic_LIST_OT_AddItem,
+    # Generic_LIST_OT_RemoveItem,
+    # Generic_LIST_OT_SelectItem,
+    # GENERIC_LIST_OT_actions,
 
     # Scene, Object, Collection Properties
     ComponentMetadata, 

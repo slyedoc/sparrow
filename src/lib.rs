@@ -74,11 +74,11 @@ impl Plugin for SparrowPlugin {
         app.add_systems(
             PostUpdate,
             (
-                #[cfg(feature="flatten_scene")]                            
-                scene_extras_and_flatten,
+                //#[cfg(feature="flatten_scene")]                            
+                //scene_extras_and_flatten,
                 //apply_deferred,
-                #[cfg(not(feature="flatten_scene"))]
-                gltf_extras::<bevy::gltf::GltfSceneExtrasGltfSceneExtras>,
+                //#[cfg(not(feature="flatten_scene"))]
+                gltf_extras::<bevy::gltf::GltfSceneExtras>,
                 gltf_extras::<GltfExtras>,
                 gltf_extras::<GltfMaterialExtras>,
             )
