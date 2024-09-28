@@ -8,22 +8,23 @@ default = ["dev", "flatten_scene"]
 flatten_scene = []
 dev = [
  "registry",
- "bevy_egui/immutable_ctx",
+ #"bevy_egui/immutable_ctx",
 ]
 registry = []
 
 [dependencies]
-bevy = { version = "0.14" }
-bevy_egui = { version = "0.28", default-features = false }
-bevy-inspector-egui = { version = "0.25", features = ["bevy_pbr", "highlight_changes"]}
+bevy = { version = "0.14.2" }
+
+#bevy_egui = { version = "0.28", default-features = false }
+bevy-inspector-egui = { version = "0.26", features = ["bevy_pbr", "highlight_changes"]}
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 ron = "0.6"
 
 # to be made optional
-bevy_asset_loader = { version = "0.21", features = [ "3d", "progress_tracking"] }
-iyes_progress = { version = "0.12", features = ["assets", "bevy_log", "debug"] }
-sickle_ui = "0.2.3"
+#bevy_asset_loader = { version = "0.21", features = [ "3d", "progress_tracking"] }
+#iyes_progress = { version = "0.12", features = ["assets", "bevy_log", "debug"] }
+#sickle_ui = "0.3.0"
 
 #ron = "0.8.1"
 #strum = { version = "0.26", features = ["derive"] }

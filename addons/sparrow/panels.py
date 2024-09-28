@@ -22,37 +22,33 @@ def draw_components(item, layout, settings: SPARROW_PG_Settings, registry: Compo
         layout.label(text ="No components found")
         return
 
-    col = layout.column_flow(columns=2)
-    row = col.row(align=True)       
+
+    col = layout.column_flow(columns=2)      
+    
+    row = col.row(align=True)
     row.prop(settings.components_dropdown, "filter", text="Filter")
     
     row = col.row(align=True)
-    
     op = row.operator(SPARROW_OT_PasteComponent.bl_idname, text="Paste: "+settings.copied_source_component_name+"", icon="PASTEDOWN")
     op.target_item_name = item_name
     op.target_item_type = item_type
+    row.enabled = settings.copied_source_item_name != '' 
 
     op = row.operator(SPARROW_OT_components_refresh_custom_properties_all.bl_idname, text="Refresh", icon="SYNTAX_ON")
 
     col = layout.column()
-    
-    row = col.row()
+    row = col.row(align=True)       
     row.prop(settings.components_dropdown, "list", text="")
     
+    small_row = row.row(align=True)
+    small_row.scale_x = 0.5  # Adjust this value to control the width
+    op = small_row.operator(SPARROW_OT_AddComponent.bl_idname, text="Add", icon="ADD")
 
-    op = row.operator(SPARROW_OT_AddComponent.bl_idname, text="Add", icon="ADD")
     op.component_type = settings.components_dropdown.list
     op.target_item_name = item_name
     op.target_item_type = item_type
-    row.enabled = settings.components_dropdown.list != ''
+    row.enabled = settings.components_dropdown.list != '' and registry.has_type_infos()
     
-    layout.separator()
-
-
-    
-    
-    row.enabled = registry.has_type_infos() and settings.copied_source_item_name != '' 
-
     layout.separator()
 
     bevy_components = get_bevy_components(item)

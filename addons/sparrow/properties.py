@@ -33,7 +33,7 @@ class SPARROW_PG_ComponentDropdown(PropertyGroup):
         settings = bpy.context.window_manager.sparrow_settings
         items = []
         for c in settings.component_list:
-            if self.filter in c.short_name:
+            if self.filter.lower() in c.short_name.lower():
                 items.append((c.long_name, c.short_name, c.long_name))
         return items
     
