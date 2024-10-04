@@ -96,7 +96,7 @@ pub fn scene_extras_and_flatten(world: &mut World) {
 
                 }
                 world.entity_mut(*entity).despawn_recursive();
-                info!("Flattened scene: {:?}", world.get::<Name>(*parent));
+                //info!("Flattened scene: {:?}", world.get::<Name>(*parent));
             }
         });
     });

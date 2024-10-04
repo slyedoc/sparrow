@@ -341,6 +341,13 @@ class SPARROW_PT_OutputPanel(SPARROW_PT_Output, bpy.types.Panel):
         settings = bpy.context.window_manager.sparrow_settings # type: SPARROW_PG_Settings
 
         col = layout.column_flow(columns=1)
+        col.operator(SPARROW_OT_ExportCurrentScene.bl_idname, icon="FILE", text="Export Current Scene")
+        
+        col = layout.column_flow(columns=1)
+        col.operator(SPARROW_OT_ExportCurrentScene.bl_idname, icon="PARTICLES", text="Export Current Scene")
+        
+        
+        col = layout.column_flow(columns=1)
         col.operator(SPARROW_OT_ExportScenes.bl_idname, icon="RENDER_STILL", text="Export Scenes")
         
         col = layout.column_flow(columns=1)

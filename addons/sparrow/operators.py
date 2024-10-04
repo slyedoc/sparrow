@@ -2,7 +2,7 @@ import json
 import time
 from typing import Any, Dict
 
-from .export import export_gltf
+from .export import export_gltf, export_scene
 from .utils import *
 from .properties import *
 from .blueprints import *
@@ -36,7 +36,7 @@ class SPARROW_OT_EditCollectionInstance(Operator):
         settings.last_scene = None
         coll = bpy.context.active_object.instance_collection
 
-        if not coll:    
+        if not coll:
             self.report({"WARNING"}, "Active item is not a collection instance")
             return {"CANCELLED"}
         
@@ -102,6 +102,61 @@ class SPARROW_OT_ExitCollectionInstance(Operator):
 
         return {'FINISHED'}
 
+class SPARROW_OT_ExportCurrentScene(Operator):
+    """Export Current Scene"""      # Use this as a tooltip for menu items and buttons.
+    bl_idname = "sparrow.export_current_scene"        # Unique identifier for buttons and menu items to reference.
+    bl_label = "Export Current Scene"         # Display name in the interface.
+    bl_options = {'REGISTER', 'UNDO'}  # Enable undo for the operator.
+
+    def execute(self, context):       
+        settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings  
+        p = os.path.join(settings.assets_path, SCENE_FOLDER)
+        os.makedirs(p, exist_ok=True)
+        
+        # save active scene
+        active_scene = bpy.context.window.scene
+        active_collection = bpy.context.view_layer.active_layer_collection
+        active_mode = bpy.context.active_object.mode if bpy.context.active_object is not None else None
+        debug_mode = bpy.app.debug_value
+        bpy.app.debug_value = 2 # so only see warnings from gltf exporter
+        # we change the mode to object mode, otherwise the gltf exporter is not happy
+        if active_mode is not None and active_mode != 'OBJECT':
+            print("setting to object mode", active_mode)
+            bpy.ops.object.mode_set(mode='OBJECT')
+
+        area = [area for area in bpy.context.screen.areas if area.type == "VIEW_3D"][0]
+        region = [region for region in area.regions if region.type == 'WINDOW'][0]
+
+        success = 0
+        failure = 0
+        
+        scene = bpy.context.window.scene
+        # could stop if scene is not marked for export
+        #scene_props: SPARROW_PG_SceneProps = scene.sparrow_scene_props
+
+        # export the scene
+        if export_scene(settings, p, area, region, scene):
+            success += 1
+        else:
+            failure += 1
+
+        # reset active scene
+        bpy.context.window.scene = active_scene
+        # reset active collection
+        bpy.context.view_layer.active_layer_collection = active_collection        
+        # reset mode
+        if active_mode is not None:
+            bpy.ops.object.mode_set( mode = active_mode )
+        
+        bpy.app.debug_value = debug_mode
+
+        if failure > 0:
+            self.report({'ERROR'}, f"Exported {success} scenes, {failure} failed")
+        else:
+            self.report({'INFO'}, f"Exported {success} scenes")
+
+        return {'FINISHED'} 
+
 class SPARROW_OT_ExportScenes(Operator):
     """Export Enabled Scenes"""      # Use this as a tooltip for menu items and buttons.
     bl_idname = "sparrow.export_scenes"        # Unique identifier for buttons and menu items to reference.
@@ -134,54 +189,10 @@ class SPARROW_OT_ExportScenes(Operator):
             scene_props: SPARROW_PG_SceneProps = scene.sparrow_scene_props
             if not scene_props.export:
                 continue
-
-            if settings.gltf_format == 'GLB':
-                gltf_path = os.path.join(p, f"{scene.name}.glb")
-                os.remove(gltf_path) if os.path.exists(gltf_path) else None
+            if export_scene(settings, p, area, region,  scene):
+                success += 1
             else:
-                gltf_path = os.path.join(p, f"{scene.name }")
-            
-            print(f"Exporting {scene.name} to {gltf_path}")
-            tmp_time = time.time()
-
-            # we set our active scene to active
-            bpy.context.window.scene = scene
-            layer_collection = scene.view_layers['ViewLayer'].layer_collection
-            bpy.context.view_layer.active_layer_collection = recurLayerCollection(layer_collection, scene.collection.name)
-            
-            # find blueprints
-            blueprints_instances = scan_blueprint_instances(scene)
-            print(f"blueprints instances in scene {scene.name}: {len(blueprints_instances)}")
-
-            # clear instance collection and set blueprint name
-            for inst in blueprints_instances:
-                obj = inst.object
-                col = inst.collection
-                obj.instance_collection = None
-                #if not 'blueprint' in obj:
-                obj['blueprint'] = sanitize_file_name(col.name)
-
-            with bpy.context.temp_override(scene=scene, area=area, region=region):
-                # detect scene mistmatch
-                scene_mismatch = bpy.context.scene.name != bpy.context.window.scene.name
-                if scene_mismatch:
-                    show_message_box("Error in Gltf Exporter", icon="ERROR", lines=[f"Context scene mismatch, aborting: {bpy.context.scene.name} vs {bpy.context.window.scene.name}"])
-                else:
-                    try:
-                        export_gltf(settings, gltf_path, blueprint=False)
-                        success += 1
-                    except Exception as error:
-                        failure += 1
-                        print("failed to export scene gltf !", error) 
-                        show_message_box("Error in Gltf Exporter", icon="ERROR", lines=exception_traceback(error))
-                    finally:
-                        # restore collection instances
-                        for inst in blueprints_instances:
-                            obj = inst.object
-                            col = inst.collection
-                            obj.instance_collection = col
-
-            print(f"{scene.name:30} {time.time() - tmp_time:.2f}s")
+                failure += 1
 
         # reset active scene
         bpy.context.window.scene = active_scene
@@ -199,8 +210,6 @@ class SPARROW_OT_ExportScenes(Operator):
             self.report({'INFO'}, f"Exported {success} scenes")
 
         return {'FINISHED'} 
-
-
 
 class SPARROW_OT_ExportBlueprints(Operator):
     """Export Enabled Blueprint Scenes"""      # Use this as a tooltip for menu items and buttons.
