@@ -53,6 +53,7 @@ classes = [
     SPARROW_OT_ExportScenes,
     SPARROW_OT_ExportCurrentScene,
     SPARROW_OT_ExportBlueprints,
+    SPARROW_OT_ExportCurrentBlueprints,
     SPARROW_OT_EditCollectionInstance,
     SPARROW_OT_ExitCollectionInstance,
     SPARROW_OT_OpenAssetsFolderBrowser,

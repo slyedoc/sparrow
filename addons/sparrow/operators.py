@@ -2,7 +2,7 @@ import json
 import time
 from typing import Any, Dict
 
-from .export import export_gltf, export_scene
+from .export import export_scene, export_scene_blueprints
 from .utils import *
 from .properties import *
 from .blueprints import *
@@ -243,56 +243,10 @@ class SPARROW_OT_ExportBlueprints(Operator):
         for scene in bpy.data.scenes:
             scene_props: SPARROW_PG_SceneProps = scene.sparrow_scene_props
             if scene_props.export_blueprints:
-                # scan scene for collections marked as assets
-                blueprints = scan_blueprints(scene)
-                
-                print(f"Blueprints: {scene.name:20} {len(blueprints):3} ")
-                for col in blueprints:
-                    tmp_time = time.time()
+                (s, f) = export_scene_blueprints(settings, p, area, region, scene)
+                success += s
+                failure += f
 
-                    if settings.gltf_format == 'GLB':
-                        gltf_path = os.path.join(p, f"{col.name}.glb")
-                    else:
-                        gltf_path = os.path.join(p, f"{col.name}")
-                    
-                    # we set our active scene to temp: this is needed otherwise the stand-in empties get generated in the wrong scene
-                    temp_scene = bpy.data.scenes.new(name=col.name+"_temp")
-                    # copy collection instance components and 
-                    # adding scene prop so GltfSceneExtra is added, serves as marker to let us flatten the scene                    
-
-                    if 'bevy_components' in col:
-                        print("copying bevy components" , col['bevy_components'])
-                        temp_scene['bevy_components'] = col['bevy_components']
-                    else:
-                        # need to add something to scene extra is added
-                        temp_scene['sparrow_blueprint'] = True
-                    
-                    
-                    temp_root_collection = temp_scene.collection
-                    bpy.context.window.scene = temp_scene
-
-                    with bpy.context.temp_override(scene=temp_scene, area=area, region=region):
-                        # detect scene mistmatch
-                        scene_mismatch = bpy.context.scene.name != bpy.context.window.scene.name
-                        if scene_mismatch:
-                            show_message_box("Error in Gltf Exporter", icon="ERROR", lines=[f"Context scene mismatch, aborting: {bpy.context.scene.name} vs {bpy.context.window.scene.name}"])
-                        else:
-                            # link the collection to the scene
-                            set_active_collection(bpy.context.scene, temp_root_collection.name)
-                            temp_root_collection.children.link(col)
-
-                            try:
-                                export_gltf(settings, gltf_path, blueprint=True)
-                                success += 1
-                            except Exception as error:
-                                failure += 1
-                                print("failed to export blueprint gltf !", error) 
-                                show_message_box("Error in Gltf Exporter", icon="ERROR", lines=exception_traceback(error))
-                            finally:
-                                # restore everything
-                                bpy.data.scenes.remove(temp_scene, do_unlink=True)
-
-                    print(f"{col.name:30} {time.time() - tmp_time:6.2f}s")
 
         # reset active scene
         bpy.context.window.scene = active_scene
@@ -310,6 +264,60 @@ class SPARROW_OT_ExportBlueprints(Operator):
             self.report({'INFO'}, f"Exported {success} blueprints")
 
         return {'FINISHED'}            # Lets Blender know the operator finished successfully.
+
+class SPARROW_OT_ExportCurrentBlueprints(Operator):
+    """Export Enabled Blueprint Scenes"""      # Use this as a tooltip for menu items and buttons.
+    bl_idname = "sparrow.export_current_blueprints"        # Unique identifier for buttons and menu items to reference.
+    bl_label = "Export Current Blueprints"         # Display name in the interface.
+    bl_options = {'REGISTER', 'UNDO'}  # Enable undo for the operator.
+
+    def execute(self, context):       
+        settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings  
+        p = os.path.join(settings.assets_path, BLUEPRINT_FOLDER)  
+        os.makedirs(p, exist_ok=True)
+
+        # save active scene
+        active_scene = bpy.context.window.scene
+        active_collection = bpy.context.view_layer.active_layer_collection
+        active_mode = bpy.context.active_object.mode if bpy.context.active_object is not None else None
+        debug_mode = bpy.app.debug_value
+        bpy.app.debug_value = 2 # so only see warnings from gltf exporter
+
+        # we change the mode to object mode, otherwise the gltf exporter is not happy
+        if active_mode is not None and active_mode != 'OBJECT':
+            print("setting to object mode", active_mode)
+            bpy.ops.object.mode_set(mode='OBJECT')
+
+        area = [area for area in bpy.context.screen.areas if area.type == "VIEW_3D"][0]
+        region = [region for region in area.regions if region.type == 'WINDOW'][0]
+
+        success = 0
+        failure = 0
+
+        scene = bpy.context.window.scene
+
+        (s, f) = export_scene_blueprints(settings, p, area, region, scene)
+        success += s
+        failure += f
+
+
+        # reset active scene
+        bpy.context.window.scene = active_scene
+        # reset active collection
+        bpy.context.view_layer.active_layer_collection = active_collection
+        # reset mode
+        if active_mode is not None:
+            bpy.ops.object.mode_set( mode = active_mode )
+        
+        bpy.app.debug_value = debug_mode
+        
+        if failure > 0:
+            self.report({'ERROR'}, f"Exported {success} blueprints, {failure} failed")
+        else:
+            self.report({'INFO'}, f"Exported {success} blueprints")
+
+        return {'FINISHED'}            # Lets Blender know the operator finished successfully.
+
 
 #Recursivly transverse layer_collection for a particular name
 
