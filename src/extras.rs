@@ -219,7 +219,7 @@ fn components_string_to_components(
             components.push((component, type_registration.clone()));
         } else {
             warn!(
-                "failed to deserialize component on {:?} - {} with value: {:?}",
+                "failed to deserialize string component on {:?} - {} with value: {:?}",
                 entity_name, name, value,
             )
         }
@@ -246,8 +246,8 @@ fn bevy_components_string_to_components(
     };
 
     for (key, value) in lookup.into_iter() {
-        //info!("----- {:?}: {:?}", &key, &value);
-        let parsed_value: String = match value.clone() {
+        
+        let parsed_value = match value.clone() {
             Value::String(str) => str,
             _ => ron::to_string(&value).unwrap().to_string(),
         };
@@ -261,22 +261,25 @@ fn bevy_components_string_to_components(
                 parsed_value
             );
 
-            debug!("component data ron string {}", ron_string);
+            
+
+            //info!("component data ron string {}", ron_string);
+    
             let mut deserializer = ron::Deserializer::from_str(ron_string.as_str())
                 .expect("deserialzer should have been generated from string");
             let reflect_deserializer = ReflectDeserializer::new(type_registry);
             let Ok(component) = reflect_deserializer.deserialize(&mut deserializer) else {
-                warn!(
+                error!(
                     "failed to deserialize component on {:?} - {} with value: {:?}",
                     name, key, value,
                 );
                 return;
             };
 
-            debug!("component {:?}", component);
-            debug!("real type {:?}", component.get_represented_type_info());
+            //debug!("component {:?}", component);
+            //debug!("real type {:?}", component.get_represented_type_info());
             components.push((component, type_registration.clone()));
-            debug!("found type registration for {}", key);
+            //debug!("found type registration for {}", key);
         } else {
             warn!("no type registration on {:?} for {}", name, key);
         }
@@ -286,3 +289,5 @@ fn bevy_components_string_to_components(
 fn capitalize_first_letter(s: &str) -> String {
     s[0..1].to_uppercase() + &s[1..]
 }
+
+
