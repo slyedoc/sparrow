@@ -128,7 +128,7 @@ pub fn gltf_extras<T: Component + Clone + GltfExtraType>(world: &mut World) {
 
                         if let Some(reflect_component) = type_registration
                             .data::<ReflectComponent>() {
-                                reflect_component.insert(&mut entity_mut, &*component, &type_registry);
+                                reflect_component.apply_or_insert(&mut entity_mut, &*component, &type_registry);
                         } else {
                             error!("Unable to get reflect component for {:?}, did you forget to add #[reflect(Component)] to your component?", type_registration.type_info());
                         }
@@ -253,15 +253,11 @@ fn bevy_components_string_to_components(
         };
 
         if let Some(type_registration) = type_registry.get_with_type_path(key.as_str()) {
-            debug!("TYPE INFO {:?}", type_registration.type_info());
-
             let ron_string = format!(
                 "{{ \"{}\":{} }}",
                 type_registration.type_info().type_path(),
                 parsed_value
             );
-
-            
 
             //info!("component data ron string {}", ron_string);
     
@@ -275,11 +271,7 @@ fn bevy_components_string_to_components(
                 );
                 return;
             };
-
-            //debug!("component {:?}", component);
-            //debug!("real type {:?}", component.get_represented_type_info());
             components.push((component, type_registration.clone()));
-            //debug!("found type registration for {}", key);
         } else {
             warn!("no type registration on {:?} for {}", name, key);
         }
