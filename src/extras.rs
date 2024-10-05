@@ -33,8 +33,6 @@ impl GltfExtraType for GltfMaterialExtras {
 
 /// Instead of just adding components like gltf_extras, going to flatten new scene in 2 ways:
 /// 1. adding the GltfSceneExtras up a level removing the "Scene Root" entity
-/// 2. Due to  and the "Full_Colllection_Heirarchy" we get a Scene Collection, remove this as well
-
 pub fn scene_extras_and_flatten(world: &mut World) {
     // get the added extras
     let extras = world
@@ -82,7 +80,7 @@ pub fn scene_extras_and_flatten(world: &mut World) {
                     type_registration
                         .data::<ReflectComponent>()
                         .expect("Unable to reflect component")
-                        .insert(&mut entity_mut, &*component, &type_registry);
+                        .apply_or_insert(&mut entity_mut, &*component, &type_registry);
                 }
 
                 // delete scene root and scene collection
