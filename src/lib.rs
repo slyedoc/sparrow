@@ -1,14 +1,15 @@
-use bevy::{
-    gltf::GltfMaterialExtras,
-    prelude::*,
-};
+use bevy::prelude::*;
 use std::path::PathBuf;
 
 mod registry;
 pub use registry::*;
 
-mod extras;
-pub use extras::*;
+mod process_gltfs;
+use process_gltfs::*;
+mod fake_entity;
+
+mod reflect_component;
+pub use reflect_component::*;
 
 #[derive(Debug, Clone)]
 /// Plugin for gltf blueprints
@@ -36,12 +37,12 @@ pub struct SparrowConfig {
     pub ignore: Vec<String>,
 }
 
+/// systemset to order your systems after the component injection when needed
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum SceneSet {
     Extras,
-    Post  
+    Post,
 }
-
 
 impl Plugin for SparrowPlugin {
     fn build(&self, app: &mut App) {
@@ -53,7 +54,8 @@ impl Plugin for SparrowPlugin {
         .configure_sets(
             PostUpdate,
             // chain() will ensure sets run in the order they are listed
-            (SceneSet::Extras, SceneSet::Post).chain()
+            (SceneSet::Extras, SceneSet::Post)
+                .chain()
                 .after(TransformSystem::TransformPropagate),
         );
 
@@ -71,19 +73,24 @@ impl Plugin for SparrowPlugin {
             app.insert_resource(AssetRoot(path))
                 .add_systems(Startup, export_types);
         }
-        app.add_systems(
-            PostUpdate,
-            (
-                #[cfg(feature="flatten_scene")]                            
-                scene_extras_and_flatten,
-                //apply_deferred,
-                #[cfg(not(feature="flatten_scene"))]
-                gltf_extras::<bevy::gltf::GltfSceneExtras>,
-                gltf_extras::<GltfExtras>,
-                gltf_extras::<GltfMaterialExtras>,
-            )
-                .chain()
-                .in_set(SceneSet::Extras),
-        );
+        app.register_type::<GltfProcessed>()
+            .add_systems(
+                PostUpdate,
+                (add_components_from_gltf_extras).in_set(SceneSet::Extras),
+            );
+            // .add_systems(
+            //     PostUpdate,
+            //     (
+            //         #[cfg(feature = "flatten_scene")]
+            //         scene_extras_and_flatten,
+            //         #[cfg(not(feature = "flatten_scene"))]
+            //         gltf_extras::<bevy::gltf::GltfSceneExtras>,
+            //         apply_deferred,
+            //         gltf_extras::<bevy::gltf::GltfExtras>,
+            //         gltf_extras::<bevy::gltf::GltfMaterialExtras>,
+            //     )
+            //         .chain()
+            //         .in_set(SceneSet::Extras),
+            // );
     }
 }

@@ -24,7 +24,7 @@ pub fn export_types(world: &mut World) {
     let components_to_filter_out = &config.component_filter.clone();
     //let resources_to_filter_out = &config.resource_filter.clone();
 
-    let types = world.resource_mut::<AppTypeRegistry>();
+    let types = world.resource_mut::<AppTypeRegistry>();    
     let types = types.read();
     let schemas = types
         .iter()
@@ -33,8 +33,31 @@ pub fn export_types(world: &mut World) {
             components_to_filter_out.is_allowed_by_id(type_id)
             //    && resources_to_filter_out.is_allowed_by_id(type_id)
         })
-        .map(export_type)
-        .map(|(name, schema)| (name, schema))
+        .map(|type_info| {
+
+            // TODO: save a default value to registry schema
+            // let type_id = type_info.type_id();
+            // let type_path = type_info.type_info().type_path();
+            // let d = types.get_type_data::<ReflectDefault>(type_id);
+            // let s = types.get_type_data::<ReflectSerialize>(type_id);
+            // match (s, d) {
+            //     (Some(_s), Some(d)) => {                    
+            //         let d = d.default();
+            //         //let s = s.get_serializable(&d);
+            //         info!("default for type: {:?} is: {:?}", type_path, d);
+            //     },
+            //     (Some(_), None) => {
+            //         warn!("No default for type: {:?}", type_path);
+            //     },
+            //     (None, Some(_)) => {
+            //         warn!("No serializer for type: {:?}", type_path);
+            //     },
+            //     (None, None) => {},
+            // }
+
+           
+            export_type(type_info)
+        } )
         .collect::<Map<_, _>>();
 
     serde_json::to_writer_pretty(
@@ -50,10 +73,12 @@ pub fn export_types(world: &mut World) {
     info!("Done exporting registry schema: {:?}", registry_save_path)
 }
 
-pub fn export_type(reg: &TypeRegistration) -> (String, Value) {
+pub fn export_type( reg: &TypeRegistration) -> (String, Value) {
+
     let t = reg.type_info();
     let binding = t.type_path_table();
-    let short_name = binding.short_path();
+    let short_name = binding.short_path();    
+
     let mut schema = match t {
         TypeInfo::Struct(info) => {
             let properties = info

@@ -562,7 +562,7 @@ class ComponentsRegistry(PropertyGroup):
         component_definition: TypeInfo = self.type_infos.get(long_name, None)
 
         if component_definition is None:
-            print(f"component: {long_name} not found in registry {len(self.type_infos)} ")
+            print(f"{long_name} on {item.name} not found in registry {len(self.type_infos)} ")
             return(None, None)
         
         short_name = component_definition["short_name"]

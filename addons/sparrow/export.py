@@ -79,7 +79,7 @@ def export_scene_blueprints(settings: SPARROW_PG_Settings, path, area, region, s
         # adding scene prop so GltfSceneExtra is added, serves as marker to let us flatten the scene                    
 
         if 'bevy_components' in col:
-            print("copying bevy components" , col['bevy_components'])
+            #print("copying bevy components" , col['bevy_components'])
             temp_scene['bevy_components'] = col['bevy_components']
         else:
             # need to add something even if it has no components, so gltf scene extras is created (used to flatten)

@@ -37,13 +37,13 @@ def update_component(self, context, definition: TypeInfo, component_name):
         return
     
     if item["components_meta"] is None:
-        print("ERROR: object does not have components", item.name)
+        print(f"ERROR: {item.name} does not have components")
         return
     
     component_meta =  next(filter(lambda component: component["long_name"] == component_name, item.components_meta.components), None)
 
     if component_meta is None:
-        print("ERROR: object does not have component", component_name, item.name)
+        print(f"ERROR: {item.name} does not have component: {component_name}")
         return
 
     property_group_name = registry.get_propertyGroupName_from_longName(component_name)

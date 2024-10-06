@@ -1,4 +1,9 @@
 # Notes
+
+Notes on blender camera setup
+[Github Notes #223](https://github.com/kaosat-dev/Blenvy/issues/223)
+
+
 [Blender Examples](https://github.com/sebbas/blender-mantaflow/tree/fluid-mantaflow/doc/python_api/examples)
 
 [VS Code Blender addon](https://github.com/JacquesLucke/blender_vscode)

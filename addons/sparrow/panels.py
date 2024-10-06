@@ -22,7 +22,6 @@ def draw_components(item, layout, settings: SPARROW_PG_Settings, registry: Compo
         layout.label(text ="No components found")
         return
 
-
     col = layout.column_flow(columns=2)      
     
     row = col.row(align=True)
@@ -53,13 +52,11 @@ def draw_components(item, layout, settings: SPARROW_PG_Settings, registry: Compo
 
     bevy_components = get_bevy_components(item)
 
-
-
-    for component_name in sorted(bevy_components): # sorted by component name, practical
-
+    # sorted by component name, practical
+    for component_name in sorted(bevy_components):
         component_meta: ComponentMetadata | None = next(filter(lambda component: component["long_name"] == component_name, components_meta.components), None)
         if component_meta is None:
-            print("ERROR: object does not have component", component_name)
+            print(f"ERROR: {item_name} does not have component: {component_name}")
             continue
 
         # our whole row 
@@ -75,9 +72,15 @@ def draw_components(item, layout, settings: SPARROW_PG_Settings, registry: Compo
         
         root_propertyGroup_name = registry.get_propertyGroupName_from_longName(component_name)  
         if root_propertyGroup_name is None:
-            print("ERROR: object does not have component", component_name)
+            print(f"ERROR: {item_name} does not have component:", component_name)
             error_message = component_meta.invalid_details if component_meta.invalid else "Missing property group name"
             row.label(text=error_message)
+
+            op = row.operator(SPARROW_OT_RemoveComponent.bl_idname, text="", icon="X")
+            op.component_name = component_name
+            op.item_name = item_name
+            op.item_type = item_type
+            
             continue
 
         component_internal = component_name in INTERNAL_COMPONENTS        
@@ -86,14 +89,16 @@ def draw_components(item, layout, settings: SPARROW_PG_Settings, registry: Compo
         if propertyGroup is None:
             error_message = component_meta.invalid_details if component_meta.invalid else "Missing component UI data, please reload registry !"
             row.label(text=error_message)
+
+            op = row.operator(SPARROW_OT_RemoveComponent.bl_idname, text="", icon="X")
+            op.component_name = component_name
+            op.item_name = item_name
+            op.item_type = item_type
+
             continue
 
-        # if the component has only 0 or 1 field names, display inline, otherwise change layout
-        single_field = len(propertyGroup.field_names) < 2
         prop_group_location = box.row(align=True).column()
-        """if single_field:
-            prop_group_location = row.column(align=True)#.split(factor=0.9)#layout.row(align=False)"""
-        
+
         if component_meta.visible:
             if component_meta.invalid:
 
