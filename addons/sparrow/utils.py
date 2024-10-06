@@ -86,7 +86,6 @@ TYPE_MAPPINGS = {
     "u32": lambda value: int(value),
     "u64": lambda value: int(value),
     "u128": lambda value: int(value),
-    "u64": lambda value: int(value),
     "usize": lambda value: int(value),
 
     "i8": lambda value: int(value),
@@ -117,7 +116,7 @@ TYPE_MAPPINGS = {
     'alloc::borrow::Cow<str>': lambda value: str(value.replace('"', "")),
 
     'bevy_render::color::Color': lambda value: parse_color(value, float, "Rgba"),
-    'bevy_ecs::entity::Entity': lambda value: int(value),
+    'bevy_ecs::entity::Entity': lambda value: parse_entity(value),
 }
 
 CONVERSION_TABLES = {
@@ -144,6 +143,8 @@ CONVERSION_TABLES = {
     "glam::Quat":  lambda value: "("+str(value[0])+ ", "+str(value[1])+ ", "+str(value[2])+ ", "+str(value[3])+")",
 
     "bevy_render::color::Color": lambda value: "Rgba(red:"+str(value[0])+ ", green:"+str(value[1])+ ", blue:"+str(value[2])+ ", alpha:"+str(value[3])+   ")",
+    "bevy_ecs::entity::Entity": lambda value: 'Entity(name: ' + (('Some("' + str(value.name) + '")') if value is not None else "None") + ')',
+
 }
 
 def recurLayerCollection(layerColl, collName):
@@ -318,6 +319,16 @@ def parse_vec4(value, caster, typeName):
 def parse_color(value, caster, typeName):
     parsed = parse_struct_string(value.replace(typeName,"").replace("(", "").replace(")","") )
     return [caster(parsed['red']), caster(parsed['green']), caster(parsed['blue']), caster(parsed['alpha'])]
+
+def parse_entity(value):
+    # strip 'Entity(name: <VAL>)' to just '<VAL>'
+    value = value[13:-1]
+    if value.startswith("Some"):
+        # strip 'Some("<VAL>")' to just '<VAL>'
+        value = value[6:-2]
+        return bpy.context.scene.objects[value]
+    else:
+        return None
 
 def to_int(input):
     return int(float(input))

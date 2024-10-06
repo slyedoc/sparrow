@@ -6,6 +6,11 @@ from typing import Any, Dict, List
 from bpy_types import PropertyGroup
 from .utils import *
 
+def is_entity_poll(self, object):
+    # TODO: only select `object.type`s that get converted to entities and maybe something against other collection(instances)?
+    return bpy.context.scene in object.users_scene 
+
+
 @dataclass
 class TypeInfo:
     is_component: bool

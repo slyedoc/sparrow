@@ -18,14 +18,14 @@ use bevy::{
     utils::HashMap,
 };
 
+use super::fake_entity::{self, BadWorldAccess};
+use crate::{ronstring_to_reflect_component::*, SparrowConfig};
+
 /// this is a flag component to tag a processed gltf, to avoid processing things multiple times
 #[derive(Component, Reflect, Default, Debug)]
 #[reflect(Component)]
 pub struct GltfProcessed;
 
-use crate::{ronstring_to_reflect_component, SparrowConfig};
-
-use super::fake_entity::{self, BadWorldAccess};
 
 // , mut entity_components: HashMap<Entity, Vec<(Box<dyn Reflect>, TypeRegistration)>>
 fn find_entity_components(
@@ -261,10 +261,11 @@ pub fn add_components_from_gltf_extras(
                     entity_mut.insert(GltfProcessed);
                     continue;
                 };
-                reflected_component.insert(&mut entity_mut, &*component, &type_registry);
+                reflected_component.apply_or_insert(&mut entity_mut, &*component, &type_registry);
 
                 entity_mut.insert(GltfProcessed); //
             }
         }
     }
 }
+

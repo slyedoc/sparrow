@@ -276,7 +276,6 @@ class ComponentsRegistry(PropertyGroup):
         "u32": dict(type=IntProperty, presets=dict(min=0)),
         "u64": dict(type=IntProperty, presets=dict(min=0)),
         "u128": dict(type=IntProperty, presets=dict(min=0)),
-        "u64": dict(type=IntProperty, presets=dict(min=0)),
         "usize": dict(type=IntProperty, presets=dict(min=0)),
 
         "i8": dict(type=IntProperty, presets=dict()),
@@ -316,19 +315,19 @@ class ComponentsRegistry(PropertyGroup):
 
         "enum":  dict(type=EnumProperty, presets=dict()), 
 
-        'bevy_ecs::entity::Entity': {"type": IntProperty, "presets": {"min":0} },
-        'bevy_utils::Uuid':  dict(type=StringProperty, presets=dict()),
+        "bevy_ecs::entity::Entity": dict(type = PointerProperty, presets=dict(type = bpy.types.Object, poll = is_entity_poll)),
+        "bevy_utils::Uuid": dict(type = StringProperty, presets=dict()),
     }
 
     value_types_defaults = {
         "string":" ",
-        "boolean": True,
+        "boolean": False,
         "float": 0.0,
         "uint": 0,
         "int":0,
 
         # todo : we are re-doing the work of the bevy /rust side here, but it seems more pratical to alway look for the same field name on the blender side for matches
-        "bool": True,
+        "bool": False,
 
         "u8": 0,
         "u16":0,
@@ -369,10 +368,8 @@ class ComponentsRegistry(PropertyGroup):
         "bevy_color::srgba::Srgba": [1.0, 1.0, 0.0, 1.0],
         "bevy_color::linear_rgba::LinearRgba": [1.0, 1.0, 0.0, 1.0],
         "bevy_color::hsva::Hsva": [1.0, 1.0, 0.0, 1.0],
-
-        'bevy_ecs::entity::Entity': 0,#4294967295, # this is the same as Bevy's Entity::Placeholder, too big for Blender..sigh
+                
         'bevy_utils::Uuid': '"'+str(uuid.uuid4())+'"'
-
     }
 
     type_infos = {}
@@ -386,7 +383,8 @@ class ComponentsRegistry(PropertyGroup):
     def generate_wrapper_propertyGroup(self, wrapped_type_long_name, item_long_name, definition_link, update, nesting_long_names=[]):
         value_types_defaults = self.value_types_defaults 
         blender_property_mapping = self.blender_property_mapping
-        is_item_value_type = item_long_name in value_types_defaults
+        is_item_value_type = item_long_name in blender_property_mapping
+        has_item_default_value = item_long_name in value_types_defaults
         
         wrapper_name = "wrapper_" + wrapped_type_long_name
 
@@ -416,15 +414,23 @@ class ComponentsRegistry(PropertyGroup):
 
 
         blender_property = StringProperty(default="", update=update)
-        if item_long_name in blender_property_mapping:
-            value = value_types_defaults[item_long_name] if is_item_value_type else None
-            blender_property_def = blender_property_mapping[item_long_name]
-            blender_property = blender_property_def["type"](
-                **blender_property_def["presets"],# we inject presets first
-                name = "property_name",
-                default = value,
-                update = update
-            )
+        if is_item_value_type:
+            value = value_types_defaults[item_long_name] if has_item_default_value else None
+            if has_item_default_value:
+                blender_property_def = blender_property_mapping[item_long_name]
+                blender_property = blender_property_def["type"](
+                    **blender_property_def["presets"],# we inject presets first
+                    name = "property_name",
+                    default = value,
+                    update = update
+                )
+            else:
+                blender_property_def = blender_property_mapping[item_long_name]
+                blender_property = blender_property_def["type"](
+                    **blender_property_def["presets"],# we inject presets first
+                    name = "property_name",
+                    update = update
+                )
             
         wrapper_annotations = {
             '0' : blender_property
@@ -861,14 +867,15 @@ class ComponentsRegistry(PropertyGroup):
             if ref_name in type_infos:
                 original = type_infos[ref_name]
                 original_long_name = original["long_name"]
-                is_value_type = original_long_name in value_types_defaults
+                is_value_type = original_long_name in blender_property_mapping
+                has_default_value = original_long_name in value_types_defaults
 
-                value = value_types_defaults[original_long_name] if is_value_type else None
+                value = value_types_defaults[original_long_name] if has_default_value else None
                 default_values.append(value)
                 prefix_infos.append(original)
 
                 if is_value_type:
-                    if original_long_name in blender_property_mapping:
+                    if has_default_value:
                         blender_property_def = blender_property_mapping[original_long_name]
                         blender_property = blender_property_def["type"](
                             **blender_property_def["presets"],# we inject presets first
@@ -876,7 +883,14 @@ class ComponentsRegistry(PropertyGroup):
                             default=value,
                             update= update
                         )
-                    
+                        __annotations__[property_name] = blender_property
+                    else: 
+                        blender_property_def = blender_property_mapping[original_long_name]
+                        blender_property = blender_property_def["type"](
+                            **blender_property_def["presets"],# we inject presets first
+                            name = property_name,
+                            update= update
+                        )
                         __annotations__[property_name] = blender_property
                 else:
                     original_long_name = original["long_name"]
@@ -940,12 +954,15 @@ class ComponentsRegistry(PropertyGroup):
             if ref_name in type_infos:
                 original = type_infos[ref_name]
                 original_long_name = original["long_name"]
-                is_value_type = original_long_name in value_types_defaults
-                value = value_types_defaults[original_long_name] if is_value_type else None
+                
+                is_value_type = original_long_name in blender_property_mapping
+                has_default_value = original_long_name in value_types_defaults
+
+                value = value_types_defaults[original_long_name] if has_default_value else None
                 default_values[property_name] = value
 
                 if is_value_type:
-                    if original_long_name in blender_property_mapping:
+                    if has_default_value:
                         blender_property_def = blender_property_mapping[original_long_name]
                         blender_property = blender_property_def["type"](
                             **blender_property_def["presets"],# we inject presets first
@@ -954,6 +971,15 @@ class ComponentsRegistry(PropertyGroup):
                             update = update
                         )
                         __annotations__[property_name] = blender_property
+                    else:
+                        blender_property_def = blender_property_mapping[original_long_name]
+                        blender_property = blender_property_def["type"](
+                            **blender_property_def["presets"],# we inject presets first
+                            name = property_name,
+                            update = update
+                        )
+                        __annotations__[property_name] = blender_property
+
                 else:
                     original_long_name = original["long_name"]
                     (sub_component_group, _) = self.process_component(original, update, {"nested": True, "long_name": original_long_name}, nesting_long_names+[property_name])

@@ -1,5 +1,7 @@
 # Notes
 
+[ run condisions](https://github.com/mvlabat/bevy_egui/issues/218)
+
 Notes on blender camera setup
 [Github Notes #223](https://github.com/kaosat-dev/Blenvy/issues/223)
 

@@ -6,10 +6,12 @@ pub use registry::*;
 
 mod process_gltfs;
 use process_gltfs::*;
+
 mod fake_entity;
 
-mod reflect_component;
-pub use reflect_component::*;
+mod ronstring_to_reflect_component;
+
+
 
 #[derive(Debug, Clone)]
 /// Plugin for gltf blueprints
