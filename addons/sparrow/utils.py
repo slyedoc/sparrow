@@ -26,15 +26,15 @@ GLTF_FORMATS = (
     ('GLTF_EMBEDDED', 'glTF Embedded (.gltf + .bin)', 'Exports with all data packed in JSON. Less efficient, but easier to edit later'),
 )
 
-VALUE_TYPES_DEFAULTS = {
+VALUE_TYPE_DEFAULTS = {
     "string":" ",
-    "boolean": True,
+    "boolean": False,
     "float": 0.0,
     "uint": 0,
     "int":0,
 
     # todo : we are re-doing the work of the bevy /rust side here, but it seems more pratical to alway look for the same field name on the blender side for matches
-    "bool": True,
+    "bool": False,
 
     "u8": 0,
     "u16":0,
@@ -74,9 +74,9 @@ VALUE_TYPES_DEFAULTS = {
 
     "bevy_render::color::Color": [1.0, 1.0, 0.0, 1.0],
 
-    'bevy_ecs::entity::Entity': 0,#4294967295, # this is the same as Bevy's Entity::Placeholder, too big for Blender..sigh
     'bevy_utils::Uuid': '"'+str(uuid.uuid4())+'"'
 }
+
 
 TYPE_MAPPINGS = {
     "bool": lambda value: True if value == "true" else False,
@@ -98,19 +98,34 @@ TYPE_MAPPINGS = {
     'f32': lambda value: float(value),
     'f64': lambda value: float(value),
 
-    "glam::Vec2": lambda value: parse_vec2(value, float, "Vec2"),
-    "glam::DVec2": lambda value: parse_vec2(value, float, "DVec2"),
-    "glam::UVec2": lambda value: parse_vec2(value, to_int, "UVec2"),
+    "glam::Vec2": lambda value: "Vec2(x:"+str(value[0])+ ", y:"+str(value[1])+")",
+    "glam::DVec2": lambda value: "DVec2(x:"+str(value[0])+ ", y:"+str(value[1])+")",
+    "glam::UVec2": lambda value: "UVec2(x:"+str(int(value[0]))+ ", y:"+str(int(value[1]))+")",
 
-    'glam::Vec3': lambda value: parse_vec3(value, float, "Vec3"),
-    "glam::Vec3A": lambda value: parse_vec3(value, float, "Vec3A"),
-    "glam::UVec3": lambda value: parse_vec3(value, to_int, "UVec3"),
 
-    "glam::Vec4": lambda value: parse_vec4(value, float, "Vec4"),
-    "glam::DVec4": lambda value: parse_vec4(value, float, "DVec4"),
-    "glam::UVec4": lambda value: parse_vec4(value, to_int, "UVec4"),
+    "glam::Vec3": lambda value: "Vec3(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+")",
+    "glam::Vec3A": lambda value: "Vec3A(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+")",
+    "glam::UVec3": lambda value: "UVec3(x:"+str(int(value[0]))+ ", y:"+str(int(value[1]))+ ", z:"+str(int(value[2]))+")",
 
-    "glam::Quat": lambda value: parse_vec4(value, float, "Quat"),
+    "glam::Vec4": lambda value: "Vec4(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+ ", w:"+str(value[3])+")",
+    "glam::DVec4": lambda value: "DVec4(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+ ", w:"+str(value[3])+")",
+    "glam::UVec4": lambda value: "UVec4(x:"+str(int(value[0]))+ ", y:"+str(int(value[1]))+ ", z:"+str(int(value[2]))+ ", w:"+str(int(value[3]))+")",
+
+    "glam::Quat":  lambda value: "Quat(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+ ", w:"+str(value[3])+")",
+
+    # "glam::Vec2": lambda value: parse_vec2(value, float, "Vec2"),
+    # "glam::DVec2": lambda value: parse_vec2(value, float, "DVec2"),
+    # "glam::UVec2": lambda value: parse_vec2(value, to_int, "UVec2"),
+
+    # 'glam::Vec3': lambda value: parse_vec3(value, float, "Vec3"),
+    # "glam::Vec3A": lambda value: parse_vec3(value, float, "Vec3A"),
+    # "glam::UVec3": lambda value: parse_vec3(value, to_int, "UVec3"),
+
+    # "glam::Vec4": lambda value: parse_vec4(value, float, "Vec4"),
+    # "glam::DVec4": lambda value: parse_vec4(value, float, "DVec4"),
+    # "glam::UVec4": lambda value: parse_vec4(value, to_int, "UVec4"),
+
+    # "glam::Quat": lambda value: parse_vec4(value, float, "Quat"),
 
     'alloc::string::String': lambda value: str(value.replace('"', "")),
     'alloc::borrow::Cow<str>': lambda value: str(value.replace('"', "")),
@@ -120,6 +135,7 @@ TYPE_MAPPINGS = {
 }
 
 CONVERSION_TABLES = {
+
     "bool": lambda value: value,
 
     "char": lambda value: '"'+value+'"',
@@ -127,24 +143,22 @@ CONVERSION_TABLES = {
     "alloc::string::String": lambda value: '"'+str(value)+'"',
     "alloc::borrow::Cow<str>": lambda value: '"'+str(value)+'"',
 
-    "glam::Vec2": lambda value: "("+str(value[0])+ ", "+str(value[1])+")",
-    "glam::DVec2": lambda value: "("+str(value[0])+ ", "+str(value[1])+")",
-    "glam::UVec2": lambda value: "("+str(int(value[0]))+ ", "+str(int(value[1]))+")",
+    "glam::Vec2": lambda value: "Vec2(x:"+str(value[0])+ ", y:"+str(value[1])+")",
+    "glam::DVec2": lambda value: "DVec2(x:"+str(value[0])+ ", y:"+str(value[1])+")",
+    "glam::UVec2": lambda value: "UVec2(x:"+str(int(value[0]))+ ", y:"+str(int(value[1]))+")",
 
+    "glam::Vec3": lambda value: "Vec3(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+")",
+    "glam::Vec3A": lambda value: "Vec3A(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+")",
+    "glam::UVec3": lambda value: "UVec3(x:"+str(int(value[0]))+ ", y:"+str(int(value[1]))+ ", z:"+str(int(value[2]))+")",
 
-    "glam::Vec3": lambda value: "("+str(value[0])+ ", "+str(value[1])+ ", "+str(value[2])+")",
-    "glam::Vec3A": lambda value: "("+str(value[0])+ ", "+str(value[1])+ ", "+str(value[2])+")",
-    "glam::UVec3": lambda value: "("+str(int(value[0]))+ ", "+str(int(value[1]))+ ", "+str(int(value[2]))+")",
+    "glam::Vec4": lambda value: "Vec4(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+ ", w:"+str(value[3])+")",
+    "glam::DVec4": lambda value: "DVec4(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+ ", w:"+str(value[3])+")",
+    "glam::UVec4": lambda value: "UVec4(x:"+str(int(value[0]))+ ", y:"+str(int(value[1]))+ ", z:"+str(int(value[2]))+ ", w:"+str(int(value[3]))+")",
 
-    "glam::Vec4": lambda value: "("+str(value[0])+ ", "+str(value[1])+ ", "+str(value[2])+ ", "+str(value[3])+")",
-    "glam::DVec4": lambda value: "("+str(value[0])+ ", "+str(value[1])+ ", "+str(value[2])+ ", "+str(value[3])+")",
-    "glam::UVec4": lambda value: "("+str(int(value[0]))+ ", "+str(int(value[1]))+ ", "+str(int(value[2]))+ ", "+str(int(value[3]))+")",
-
-    "glam::Quat":  lambda value: "("+str(value[0])+ ", "+str(value[1])+ ", "+str(value[2])+ ", "+str(value[3])+")",
+    "glam::Quat":  lambda value: "Quat(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+ ", w:"+str(value[3])+")",
 
     "bevy_render::color::Color": lambda value: "Rgba(red:"+str(value[0])+ ", green:"+str(value[1])+ ", blue:"+str(value[2])+ ", alpha:"+str(value[3])+   ")",
     "bevy_ecs::entity::Entity": lambda value: 'Entity(name: ' + (('Some("' + str(value.name) + '")') if value is not None else "None") + ')',
-
 }
 
 def recurLayerCollection(layerColl, collName):
@@ -197,7 +211,7 @@ def is_def_value_type(definition):
     if definition == None:
         return True    
     long_name = definition["long_name"]
-    is_value_type = long_name in VALUE_TYPES_DEFAULTS
+    is_value_type = long_name in VALUE_TYPE_DEFAULTS
     return is_value_type
 
 def parse_struct_string(string, start_nesting=0):

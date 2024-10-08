@@ -347,20 +347,13 @@ class SPARROW_PT_OutputPanel(SPARROW_PT_Output, bpy.types.Panel):
 
         col = layout.column_flow(columns=1)
         col.operator(SPARROW_OT_ExportCurrentScene.bl_idname, icon="FILE", text="Export Current Scene")
-        
+                
         col = layout.column_flow(columns=1)
-        col.operator(SPARROW_OT_ExportCurrentBlueprints.bl_idname, icon="PARTICLES")
-        
-        col = layout.column_flow(columns=1)
-        col.operator(SPARROW_OT_ExportScenes.bl_idname, icon="RENDER_STILL", text="Export Scenes")
-        
-        col = layout.column_flow(columns=1)
-        col.operator(SPARROW_OT_ExportBlueprints.bl_idname, icon="PARTICLEMODE", text="Export Blueprints")
-        
+        col.operator(SPARROW_OT_ExportScenes.bl_idname, icon="RENDER_STILL", text="Export Scenes")                
         
         row = col.row()
-        row.label(text="Scenes")
-        row.label(text="Scene/Blueprint")        
+        row.label(text="Selected")
+        row.label(text="Export Scene/Blueprint")        
 
         box = col.box() 
 
@@ -368,10 +361,12 @@ class SPARROW_PT_OutputPanel(SPARROW_PT_Output, bpy.types.Panel):
         for scene in bpy.data.scenes:       ## new 
             
             scene_props = scene.sparrow_scene_props
-            row = col.row()            
+            row = col.row() 
+            row.prop(scene_props, "export", text="")           
             row.label(text=scene.name)
-            row.prop(scene_props, "export", text="")   ## changed
-            row.prop(scene_props, "export_blueprints", text="")   ## changed
+
+            row.prop(scene_props, "scene_export", text="")
+            row.prop(scene_props, "blueprint_export", text="")
             
 
         col.separator()
@@ -394,13 +389,8 @@ class SPARROW_PT_OutputPanel(SPARROW_PT_Output, bpy.types.Panel):
         row.label(text="Format")
         row.prop(settings, "gltf_format", text="")        
 
-
-
         row = box.row()
         row.operator(SPARROW_OT_LoadRegistry.bl_idname, text="Reload Registry")
-        
-        #folder_selector = row.operator(ReloadRegistryOperator.bl_idname, icon="FILE_FOLDER", text="")
-        #folder_selector.target_property = "assets_path"
 
 class SPARROW_PT_Scene:
     bl_space_type = 'PROPERTIES'
@@ -412,11 +402,16 @@ class SPARROW_PT_ScenePanel(SPARROW_PT_Scene, bpy.types.Panel):
     bl_label = "Bevy Components"
 
     def draw(self, context):       
-
         layout = self.layout 
         settings = bpy.context.window_manager.sparrow_settings # type: SPARROW_PG_Settings    
         registry = bpy.context.window_manager.components_registry # type: ComponentsRegistry
         item  =  context.scene
+
+        scene_props : SPARROW_PG_SceneProps = item.sparrow_scene_props
+
+        col = layout.column_flow(columns=2)
+        col.prop(scene_props, "scene_export", text="Scene Export")
+        col.prop(scene_props, "blueprint_export", text="Blueprint Export")
 
         draw_components(item, layout, settings, registry)
 

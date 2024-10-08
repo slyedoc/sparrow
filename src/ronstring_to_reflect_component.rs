@@ -140,8 +140,8 @@ fn bevy_components_string_to_components(
                 .deserialize(&mut deserializer)
                 .unwrap_or_else(|e| {
                     panic!(
-                        "failed to deserialize component '{}'\n{}\n{:?}",
-                        key, ron_string, e
+                        "failed to deserialize {:?} component '{}'\n{}\n{:?}",
+                        name, key, ron_string, e
                     )
                 });
             components.push((component, type_registration.clone()));

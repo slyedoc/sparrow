@@ -58,13 +58,15 @@ def export_scene(settings: SPARROW_PG_Settings, path, area, region, scene) -> bo
     print(f"{scene.name:30} {time.time() - tmp_time:.2f}s")
     return success
 
-def export_scene_blueprints(settings: SPARROW_PG_Settings, path, area, region, scene) -> (int, int):
+def export_scene_blueprints(settings: SPARROW_PG_Settings, path, area, region, scene) -> tuple[list[str], list[str]]:
+    # returens success and failure lists of blueprints
+    
     # scan scene for collections marked as assets
     blueprints = scan_blueprints(scene)
   
     print(f"Blueprints: {scene.name:20} {len(blueprints):3} ")
-    success = 0
-    failure = 0
+    success = []
+    failure = []
     for col in blueprints:
         tmp_time = time.time()
 
@@ -101,9 +103,9 @@ def export_scene_blueprints(settings: SPARROW_PG_Settings, path, area, region, s
 
                 try:
                     export_gltf(settings, gltf_path, blueprint=True)
-                    success += 1
+                    success.append(col.name)
                 except Exception as error:
-                    failure += 1
+                    failure.append(col.name)
                     print("failed to export blueprint gltf !", error) 
                     show_message_box("Error in Gltf Exporter", icon="ERROR", lines=exception_traceback(error))
                 finally:
@@ -115,27 +117,27 @@ def export_scene_blueprints(settings: SPARROW_PG_Settings, path, area, region, s
 
 def export_gltf(settings: SPARROW_PG_Settings, gltf_path: str, blueprint: bool):
     bpy.ops.export_scene.gltf(
-            filepath=gltf_path,
-            export_format=settings.gltf_format,
-            will_save_settings=False,
-            check_existing=False,
-            
-            export_apply=True, # prevents exporting shape keys
-            export_cameras=True,
-            export_lights=True,            
-            export_yup=True,                    
-            #export_materials='EXPORT',
-            export_extras=True, # For custom exported properties.
-            export_animations=True,
-            export_animation_mode='ACTIONS',
-            export_gn_mesh=True,                    
-            export_normals=True,
-            export_texcoords=True,
+        filepath=gltf_path,
+        export_format=settings.gltf_format,
+        will_save_settings=False,
+        check_existing=False,
+        
+        export_apply=True, # prevents exporting shape keys
+        export_cameras=True,
+        export_lights=True,            
+        export_yup=True,                    
+        #export_materials='EXPORT',
+        export_extras=True, # For custom exported properties.
+        export_animations=True,
+        export_animation_mode='ACTIONS',
+        export_gn_mesh=True,                    
+        export_normals=True,
+        export_texcoords=True,
 
-            use_selection = False,
-            use_active_collection_with_nested=True, # different for blueprints
-            use_active_collection=True, # different for blueprints
-            use_active_scene=True, 
-            # filters                                                                                                        
-            use_visible=True,
-        )
+        use_selection = False,
+        use_active_collection_with_nested=True, # different for blueprints
+        use_active_collection=True, # different for blueprints
+        use_active_scene=True, 
+        # filters                                                                                                        
+        use_visible=True,
+    )

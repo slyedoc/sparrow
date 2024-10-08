@@ -127,18 +127,25 @@ class SPARROW_OT_ExportCurrentScene(Operator):
         area = [area for area in bpy.context.screen.areas if area.type == "VIEW_3D"][0]
         region = [region for region in area.regions if region.type == 'WINDOW'][0]
 
-        success = 0
-        failure = 0
+        success_scene = []
+        failure_scene = []
+
+        success_blueprints = []
+        failure_blueprints = []
         
         scene = bpy.context.window.scene
-        # could stop if scene is not marked for export
-        #scene_props: SPARROW_PG_SceneProps = scene.sparrow_scene_props
+        scene_props: SPARROW_PG_SceneProps = scene.sparrow_scene_props
 
-        # export the scene
-        if export_scene(settings, p, area, region, scene):
-            success += 1
-        else:
-            failure += 1
+        if scene_props.scene_export:    
+            if export_scene(settings, p, area, region, scene):
+                success_scene.append(scene.name)
+            else:
+                failure_scene.append(scene.name)
+        
+        if scene_props.blueprint_export:
+            (s, f) = export_scene_blueprints(settings, p, area, region, scene)
+            success_blueprints.extend(s)
+            failure_blueprints.extend(f)
 
         # reset active scene
         bpy.context.window.scene = active_scene
@@ -150,13 +157,14 @@ class SPARROW_OT_ExportCurrentScene(Operator):
         
         bpy.app.debug_value = debug_mode
 
-        if failure > 0:
-            self.report({'ERROR'}, f"Exported {success} scenes, {failure} failed")
+        if len(failure_scene)  > 0 or len(failure_blueprints) > 0:
+            self.report({'ERROR'}, f"Exported {success_scene} scenes, {failure_scene} failed, exported {success_blueprints} blueprints, {failure_blueprints} failed")
         else:
-            self.report({'INFO'}, f"Exported {success} scenes")
+            self.report({'INFO'}, f"Exported {success_scene} scenes and {success_blueprints} blueprints")
 
         return {'FINISHED'} 
 
+# export all scenes that are marked for export
 class SPARROW_OT_ExportScenes(Operator):
     """Export Enabled Scenes"""      # Use this as a tooltip for menu items and buttons.
     bl_idname = "sparrow.export_scenes"        # Unique identifier for buttons and menu items to reference.
@@ -182,17 +190,27 @@ class SPARROW_OT_ExportScenes(Operator):
         area = [area for area in bpy.context.screen.areas if area.type == "VIEW_3D"][0]
         region = [region for region in area.regions if region.type == 'WINDOW'][0]
 
-        success = 0
-        failure = 0
+        success_scene: list[str] = []
+        failure_scene: list[str] = []
+
+        success_blueprints: list[str] = []
+        failure_blueprints: list[str] = []
 
         for scene in bpy.data.scenes:
             scene_props: SPARROW_PG_SceneProps = scene.sparrow_scene_props
             if not scene_props.export:
                 continue
-            if export_scene(settings, p, area, region,  scene):
-                success += 1
-            else:
-                failure += 1
+
+            if scene_props.scene_export:    
+                if export_scene(settings, p, area, region, scene):
+                    success_scene.append(scene.name)
+                else:
+                    failure_scene.append(scene.name)
+            if scene_props.blueprint_export:
+                (s, f) = export_scene_blueprints(settings, p, area, region, scene)
+                success_blueprints.extend(s)
+                failure_blueprints.extend(f)
+
 
         # reset active scene
         bpy.context.window.scene = active_scene
@@ -204,10 +222,10 @@ class SPARROW_OT_ExportScenes(Operator):
         
         bpy.app.debug_value = debug_mode
 
-        if failure > 0:
-            self.report({'ERROR'}, f"Exported {success} scenes, {failure} failed")
+        if len(failure_scene) > 0 or len(failure_blueprints) > 0:
+            self.report({'ERROR'}, f"Exported {success_scene} scenes, {failure_scene} failed, exported {success_blueprints} blueprints, {failure_blueprints} failed")
         else:
-            self.report({'INFO'}, f"Exported {success} scenes")
+            self.report({'INFO'}, f"Exported {success_scene} scenes and {success_blueprints} blueprints")
 
         return {'FINISHED'} 
 
@@ -242,7 +260,7 @@ class SPARROW_OT_ExportBlueprints(Operator):
 
         for scene in bpy.data.scenes:
             scene_props: SPARROW_PG_SceneProps = scene.sparrow_scene_props
-            if scene_props.export_blueprints:
+            if scene_props.blueprint_export:
                 (s, f) = export_scene_blueprints(settings, p, area, region, scene)
                 success += s
                 failure += f
@@ -265,58 +283,7 @@ class SPARROW_OT_ExportBlueprints(Operator):
 
         return {'FINISHED'}            # Lets Blender know the operator finished successfully.
 
-class SPARROW_OT_ExportCurrentBlueprints(Operator):
-    """Export Enabled Blueprint Scenes"""      # Use this as a tooltip for menu items and buttons.
-    bl_idname = "sparrow.export_current_blueprints"        # Unique identifier for buttons and menu items to reference.
-    bl_label = "Export Current Blueprints"         # Display name in the interface.
-    bl_options = {'REGISTER', 'UNDO'}  # Enable undo for the operator.
 
-    def execute(self, context):       
-        settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings  
-        p = os.path.join(settings.assets_path, BLUEPRINT_FOLDER)  
-        os.makedirs(p, exist_ok=True)
-
-        # save active scene
-        active_scene = bpy.context.window.scene
-        active_collection = bpy.context.view_layer.active_layer_collection
-        active_mode = bpy.context.active_object.mode if bpy.context.active_object is not None else None
-        debug_mode = bpy.app.debug_value
-        bpy.app.debug_value = 2 # so only see warnings from gltf exporter
-
-        # we change the mode to object mode, otherwise the gltf exporter is not happy
-        if active_mode is not None and active_mode != 'OBJECT':
-            print("setting to object mode", active_mode)
-            bpy.ops.object.mode_set(mode='OBJECT')
-
-        area = [area for area in bpy.context.screen.areas if area.type == "VIEW_3D"][0]
-        region = [region for region in area.regions if region.type == 'WINDOW'][0]
-
-        success = 0
-        failure = 0
-
-        scene = bpy.context.window.scene
-
-        (s, f) = export_scene_blueprints(settings, p, area, region, scene)
-        success += s
-        failure += f
-
-
-        # reset active scene
-        bpy.context.window.scene = active_scene
-        # reset active collection
-        bpy.context.view_layer.active_layer_collection = active_collection
-        # reset mode
-        if active_mode is not None:
-            bpy.ops.object.mode_set( mode = active_mode )
-        
-        bpy.app.debug_value = debug_mode
-        
-        if failure > 0:
-            self.report({'ERROR'}, f"Exported {success} blueprints, {failure} failed")
-        else:
-            self.report({'INFO'}, f"Exported {success} blueprints")
-
-        return {'FINISHED'}            # Lets Blender know the operator finished successfully.
 
 
 #Recursivly transverse layer_collection for a particular name

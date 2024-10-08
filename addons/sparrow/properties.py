@@ -252,8 +252,13 @@ class ComponentsMeta(PropertyGroup):
     # ) # type: ignore
 
 class SPARROW_PG_SceneProps(PropertyGroup):
+    # used for selection for mass export
     export: BoolProperty(name="Export", description="Automatically export scene as level", default = False, options = set()) # type: ignore
-    export_blueprints: BoolProperty(name="Blueprints", description="Automatically export anything marked as asset as blueprint", default = False, options = set()) # type: ignore
+
+    # export scene as scene
+    scene_export: BoolProperty(name="Export Scene", description="Automatically export scene as level", default = True, options = set()) # type: ignore
+    # export bluepritns
+    blueprint_export: BoolProperty(name="Export Blueprints", description="Automatically export anything marked as asset as blueprint", default = False, options = set()) # type: ignore
 
 
 # this is where we store the information for all available components
@@ -319,59 +324,6 @@ class ComponentsRegistry(PropertyGroup):
         "bevy_utils::Uuid": dict(type = StringProperty, presets=dict()),
     }
 
-    value_types_defaults = {
-        "string":" ",
-        "boolean": False,
-        "float": 0.0,
-        "uint": 0,
-        "int":0,
-
-        # todo : we are re-doing the work of the bevy /rust side here, but it seems more pratical to alway look for the same field name on the blender side for matches
-        "bool": False,
-
-        "u8": 0,
-        "u16":0,
-        "u32":0,
-        "u64":0,
-        "u128":0,
-        "usize":0,
-
-        "i8": 0,
-        "i16":0,
-        "i32":0,
-        "i64":0,
-        "i128":0,
-        "isize":0,
-
-        "f32": 0.0,
-        "f64":0.0,
-
-        "char": " ",
-        "str": " ",
-        "alloc::string::String": " ",
-        "alloc::borrow::Cow<str>":  " ",
-
-        "glam::Vec2": [0.0, 0.0],
-        "glam::DVec2":  [0.0, 0.0],
-        "glam::UVec2": [0, 0],
-
-        "glam::Vec3": [0.0, 0.0, 0.0],
-        "glam::Vec3A":[0.0, 0.0, 0.0],
-        "glam::UVec3": [0, 0, 0],
-
-        "glam::Vec4": [0.0, 0.0, 0.0, 0.0], 
-        "glam::DVec4": [0.0, 0.0, 0.0, 0.0], 
-        "glam::UVec4": [0, 0, 0, 0], 
-
-        "glam::Quat":  [0.0, 0.0, 0.0, 0.0], 
-
-        "bevy_color::srgba::Srgba": [1.0, 1.0, 0.0, 1.0],
-        "bevy_color::linear_rgba::LinearRgba": [1.0, 1.0, 0.0, 1.0],
-        "bevy_color::hsva::Hsva": [1.0, 1.0, 0.0, 1.0],
-                
-        'bevy_utils::Uuid': '"'+str(uuid.uuid4())+'"'
-    }
-
     type_infos = {}
     type_infos_missing = []
     component_propertyGroups = {}
@@ -381,10 +333,9 @@ class ComponentsRegistry(PropertyGroup):
     invalid_components = []
 
     def generate_wrapper_propertyGroup(self, wrapped_type_long_name, item_long_name, definition_link, update, nesting_long_names=[]):
-        value_types_defaults = self.value_types_defaults 
         blender_property_mapping = self.blender_property_mapping
         is_item_value_type = item_long_name in blender_property_mapping
-        has_item_default_value = item_long_name in value_types_defaults
+        has_item_default_value = item_long_name in VALUE_TYPE_DEFAULTS
         
         wrapper_name = "wrapper_" + wrapped_type_long_name
 
@@ -412,10 +363,9 @@ class ComponentsRegistry(PropertyGroup):
         property_group_name = self.generate_propGroup_name(nesting_long_names)
         self.add_custom_type(wrapper_name, wrapper_definition)
 
-
         blender_property = StringProperty(default="", update=update)
         if is_item_value_type:
-            value = value_types_defaults[item_long_name] if has_item_default_value else None
+            value = VALUE_TYPE_DEFAULTS[item_long_name] if has_item_default_value else None
             if has_item_default_value:
                 blender_property_def = blender_property_mapping[item_long_name]
                 blender_property = blender_property_def["type"](
@@ -467,7 +417,7 @@ class ComponentsRegistry(PropertyGroup):
         # generate_propertyGroups_for_components
         for component_name in self.type_infos.keys(): 
             definition = self.type_infos.get(component_name, None)      
-            #print("processing component", component_name)
+            print("processing component", component_name)
             self.process_component(definition, update_calback_helper(definition, update_component, component_name), None, [])
 
         #  process custom types if we had to add any wrapper types on the fly, process them now
@@ -738,24 +688,28 @@ class ComponentsRegistry(PropertyGroup):
             __annotations__ = __annotations__ | self.process_structs(definition, properties, update, nesting_long_names)
             with_properties = True
             tupple_or_struct = "struct"
-            #print(f"{padding}struct")
+            print(f"struct")
 
         if has_prefix_items:
             __annotations__ = __annotations__ | self.process_tupples(definition, prefix_items, update, nesting_long_names)
             with_items = True
             tupple_or_struct = "tupple"
+            print(f"tupple")
 
         if is_enum:
             __annotations__ = __annotations__ | self.process_enum(definition, update, nesting_long_names)
             with_enum = True
+            print(f"enum")
 
         if is_list:
             __annotations__ = __annotations__ | self.process_list(definition, update, nesting_long_names)
             with_list= True
+            print(f"list")
 
         if is_map:
             __annotations__ = __annotations__ | self.process_map(definition, update, nesting_long_names)
             with_map = True
+            print(f"map")
 
         
         field_names = []
@@ -849,7 +803,6 @@ class ComponentsRegistry(PropertyGroup):
         return __annotations__
 
     def process_tupples(self, definition: TypeInfo, prefixItems, update, nesting_long_names=[]):
-        value_types_defaults = self.value_types_defaults 
         blender_property_mapping = self.blender_property_mapping
         type_infos = self.type_infos
         long_name = definition["long_name"]
@@ -867,10 +820,11 @@ class ComponentsRegistry(PropertyGroup):
             if ref_name in type_infos:
                 original = type_infos[ref_name]
                 original_long_name = original["long_name"]
-                is_value_type = original_long_name in blender_property_mapping
-                has_default_value = original_long_name in value_types_defaults
 
-                value = value_types_defaults[original_long_name] if has_default_value else None
+                is_value_type = original_long_name in blender_property_mapping
+                has_default_value = original_long_name in VALUE_TYPE_DEFAULTS
+                
+                value = VALUE_TYPE_DEFAULTS[original_long_name] if has_default_value else None
                 default_values.append(value)
                 prefix_infos.append(original)
 
@@ -907,7 +861,6 @@ class ComponentsRegistry(PropertyGroup):
         return __annotations__
 
     def process_list(self, definition, update, nesting_long_names=[]):
-        value_types_defaults = self.value_types_defaults 
         type_infos = self.type_infos
 
         long_name = definition["long_name"]
@@ -917,7 +870,7 @@ class ComponentsRegistry(PropertyGroup):
         
         item_definition = type_infos[ref_name]
         item_long_name = item_definition["long_name"]
-        is_item_value_type = item_long_name in value_types_defaults
+        is_item_value_type = item_long_name in VALUE_TYPE_DEFAULTS
 
         property_group_class = None
         #if the content of the list is a unit type, we need to generate a fake wrapper, otherwise we cannot use layout.prop(group, "propertyName") as there is no propertyName !
@@ -939,7 +892,6 @@ class ComponentsRegistry(PropertyGroup):
         return __annotations__
 
     def process_structs(self, definition: TypeInfo, properties, update, nesting_long_names): 
-        value_types_defaults = self.value_types_defaults 
         blender_property_mapping = self.blender_property_mapping
         type_infos = self.type_infos
         long_name = definition["long_name"]
@@ -956,9 +908,9 @@ class ComponentsRegistry(PropertyGroup):
                 original_long_name = original["long_name"]
                 
                 is_value_type = original_long_name in blender_property_mapping
-                has_default_value = original_long_name in value_types_defaults
+                has_default_value = original_long_name in VALUE_TYPE_DEFAULTS
 
-                value = value_types_defaults[original_long_name] if has_default_value else None
+                value = VALUE_TYPE_DEFAULTS[original_long_name] if has_default_value else None
                 default_values[property_name] = value
 
                 if is_value_type:
@@ -995,7 +947,6 @@ class ComponentsRegistry(PropertyGroup):
         return __annotations__
 
     def process_map(self, definition: TypeInfo, update, nesting_long_names=[]):
-        value_types_defaults = self.value_types_defaults 
         type_infos = self.type_infos
 
         long_name = definition["long_name"]
@@ -1011,7 +962,7 @@ class ComponentsRegistry(PropertyGroup):
         if key_ref_name in type_infos:
             key_definition = type_infos[key_ref_name]
             original_long_name = key_definition["long_name"]
-            is_key_value_type = original_long_name in value_types_defaults
+            is_key_value_type = original_long_name in VALUE_TYPE_DEFAULTS
             definition_link = definition["key_type"]["type"]["$ref"]
 
             #if the content of the list is a unit type, we need to generate a fake wrapper, otherwise we cannot use layout.prop(group, "propertyName") as there is no propertyName !
@@ -1030,7 +981,7 @@ class ComponentsRegistry(PropertyGroup):
         if value_ref_name in type_infos:
             value_definition = type_infos[value_ref_name]
             original_long_name = value_definition["long_name"]
-            is_value_value_type = original_long_name in value_types_defaults
+            is_value_value_type = original_long_name in VALUE_TYPE_DEFAULTS
             definition_link = definition["value_type"]["type"]["$ref"]
 
             #if the content of the list is a unit type, we need to generate a fake wrapper, otherwise we cannot use layout.prop(group, "propertyName") as there is no propertyName !
@@ -1227,7 +1178,7 @@ class ComponentsRegistry(PropertyGroup):
         prefix_items = definition["prefix_items"] if "prefix_items" in definition else []
         long_name = definition["long_name"]
         
-        is_value_type = long_name in self.value_types_defaults
+        is_value_type = long_name in VALUE_TYPE_DEFAULTS
         nesting = nesting + [definition["short_name"]]
 
         if is_value_type:

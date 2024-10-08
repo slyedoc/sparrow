@@ -6,7 +6,7 @@ import json
 #   viewing: bevy_components and components_meta states
 
 # Safety first
-for_real = False
+for_real = True
 
 delete_empty = False
 # List of objects to print out debug info for
@@ -20,6 +20,7 @@ delete_props = list(["BlenderLightShadows"])
 delete_bevy_components = list(["probe::assets::FlattenHelper"])
 debug_bevy_components = list([]) # ["*"] for all objects
 replace_bevy_components = list([
+    
     ("space_fighter::assets::collider::ColliderHelper", "space_fighter::assets::physics::ColliderHelper"),
 #    ("bevy_xpbd_3d::components::RigidBody", "avian3d::dynamics::RigidBody"),
 #    ("avian3d::dynamics::RigidBody", "avian3d::dynamics::rigid_body::RigidBody"),
