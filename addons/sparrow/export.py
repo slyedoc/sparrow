@@ -6,8 +6,11 @@ from .utils import *
 from .blueprints import *
 from .properties import SPARROW_PG_Settings
 
-def export_scene(settings: SPARROW_PG_Settings, path, area, region, scene) -> bool:
+def export_scene(settings: SPARROW_PG_Settings, area, region, scene) -> bool:
     success = False
+    path = os.path.join(settings.assets_path, SCENE_FOLDER)
+    os.makedirs(path, exist_ok=True)
+
     if settings.gltf_format == 'GLB':
         gltf_path = os.path.join(path, f"{scene.name}.glb")
         # remove existing file
@@ -16,7 +19,14 @@ def export_scene(settings: SPARROW_PG_Settings, path, area, region, scene) -> bo
     else:
         gltf_path = os.path.join(path, f"{scene.name }")
         
-    print(f"Exporting {scene.name} to {gltf_path}")
+    #print(f"Exporting {scene.name} to {gltf_path}")
+    
+    # export gravity settings
+    if scene.use_gravity:
+        scene['SceneGravity'] = '(' + CONVERSION_TABLES['glam::Vec3']( [scene.gravity[0], scene.gravity[2], scene.gravity[1]] ) + ')'
+    else:
+        scene['SceneGravity'] = '(' + CONVERSION_TABLES['glam::Vec3']( [0,0,0] ) + ')'
+    
     tmp_time = time.time()
 
     # we set our active scene to active
@@ -24,17 +34,26 @@ def export_scene(settings: SPARROW_PG_Settings, path, area, region, scene) -> bo
     layer_collection = scene.view_layers['ViewLayer'].layer_collection
     bpy.context.view_layer.active_layer_collection = recurLayerCollection(layer_collection, scene.collection.name)
         
-    # find blueprints
-    blueprints_instances = scan_blueprint_instances(scene)
-    print(f"blueprints instances in scene {scene.name}: {len(blueprints_instances)}")
-
+    # find collection instances to be replaced with empty with blueprint name
+    blueprints_instances: List[BlueprintInstance] = []        
+    for obj in bpy.data.objects:         
+        if scene.user_of_id(obj) == 0 or obj.instance_collection is None or obj.instance_collection.asset_data is None: 
+            continue
+        blueprints_instances.append(BlueprintInstance(obj, obj.instance_collection))
+    
+    # matches my rust build script
+    def sanitize_file_name(name: str) -> str:
+        parts = re.split(r'\W+', name)  # Split on non-alphanumeric characters
+        sanitized_parts = [
+            part.capitalize() for part in parts if part  # Capitalize each part
+        ]
+        return ''.join(sanitized_parts)
+    
     # clear instance collection and set blueprint name
     for inst in blueprints_instances:
         obj = inst.object
-        col = inst.collection
-        obj.instance_collection = None
-            #if not 'blueprint' in obj:
-        obj['blueprint'] = sanitize_file_name(col.name)
+        obj.instance_collection = None            
+        obj['blueprint'] = sanitize_file_name(inst.collection.name)
 
     with bpy.context.temp_override(scene=scene, area=area, region=region):
             # detect scene mistmatch
@@ -58,36 +77,37 @@ def export_scene(settings: SPARROW_PG_Settings, path, area, region, scene) -> bo
     print(f"{scene.name:30} {time.time() - tmp_time:.2f}s")
     return success
 
-def export_scene_blueprints(settings: SPARROW_PG_Settings, path, area, region, scene) -> tuple[list[str], list[str]]:
-    # returens success and failure lists of blueprints
-    
-    # scan scene for collections marked as assets
-    blueprints = scan_blueprints(scene)
-  
-    print(f"Blueprints: {scene.name:20} {len(blueprints):3} ")
+# returens success and failure lists of blueprints
+def export_scene_blueprints(settings: SPARROW_PG_Settings, area, region, scene) -> tuple[list[str], list[str]]:
+    path = os.path.join(settings.assets_path, BLUEPRINT_FOLDER)  
+    os.makedirs(path, exist_ok=True)
+
     success = []
     failure = []
-    for col in blueprints:
+    
+    # iterate over all collections
+    for col in bpy.data.collections:         
+        # filter collections that are not assets and not in the scene
+        if scene.user_of_id(col) == 0 or col.asset_data is None: 
+            continue
+
         tmp_time = time.time()
 
+        # build file path
         if settings.gltf_format == 'GLB':
             gltf_path = os.path.join(path, f"{col.name}.glb")
         else:
             gltf_path = os.path.join(path, f"{col.name}")
         
-        # we set our active scene to temp: this is needed otherwise the stand-in empties get generated in the wrong scene
+        # create temp scene: this is needed otherwise the stand-in empties get generated in the wrong scene
         temp_scene = bpy.data.scenes.new(name=col.name+"_temp")
-        # copy collection instance components and 
-        # adding scene prop so GltfSceneExtra is added, serves as marker to let us flatten the scene                    
 
         if 'bevy_components' in col:
-            #print("copying bevy components" , col['bevy_components'])
             temp_scene['bevy_components'] = col['bevy_components']
         else:
             # need to add something even if it has no components, so gltf scene extras is created (used to flatten)
             temp_scene['sparrow_blueprint'] = True
-        
-        
+                
         temp_root_collection = temp_scene.collection
         bpy.context.window.scene = temp_scene
 

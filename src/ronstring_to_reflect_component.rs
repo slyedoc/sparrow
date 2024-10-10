@@ -1,7 +1,7 @@
 use std::any::TypeId;
 
 use bevy::core::Name;
-use bevy::log::{debug, warn};
+use bevy::log::warn;
 use bevy::reflect::serde::ReflectDeserializer;
 use bevy::reflect::{GetTypeRegistration, Reflect, TypeRegistration, TypeRegistry};
 use bevy::utils::HashMap;
@@ -38,7 +38,6 @@ pub(crate) fn ronstring_to_reflect_component(
             components_string_to_components(
                 name,
                 component,
-                value,
                 parsed_value,
                 type_registry,
                 &mut components,
@@ -52,7 +51,6 @@ pub(crate) fn ronstring_to_reflect_component(
 fn components_string_to_components(
     entity_name: &Option<&Name>,
     name: String,
-    value: Value,
     parsed_value: String,
     type_registry: &TypeRegistry,
     components: &mut Vec<(Box<dyn Reflect>, TypeRegistration)>,
@@ -64,34 +62,24 @@ fn components_string_to_components(
     if let Some(type_registration) =
         type_registry.get_with_short_type_path(capitalized_type_name.as_str())
     {
-        //info!("TYPE INFO {:?}", type_registration.type_info());
-
         let ron_string = format!(
             "{{ \"{}\":{} }}",
             type_registration.type_info().type_path(),
             parsed_value
         );
 
-        // usefull to determine what an entity looks like Serialized
-        /*let test_struct = CameraRenderGraph::new("name");
-        let serializer = ReflectSerializer::new(&test_struct, &type_registry);
-        let serialized =
-            ron::ser::to_string_pretty(&serializer, ron::ser::PrettyConfig::default()).unwrap();
-        println!("serialized Component {}", serialized);*/
-
-        debug!("component data ron string {}", ron_string);
-
         let mut deserializer = ron::Deserializer::from_str(ron_string.as_str())
             .expect("deserialzer should have been generated from string");
-        let reflect_deserializer = ReflectDeserializer::new(type_registry);
-        if let Ok(component) = reflect_deserializer.deserialize(&mut deserializer) {
-            components.push((component, type_registration.clone()));
-        } else {
-            warn!(
-                "failed to deserialize string component on {:?} - {} with value: {:?}",
-                entity_name, name, value,
-            )
-        }
+        let reflect_deserializer = ReflectDeserializer::new(type_registry);        
+        let component = reflect_deserializer
+            .deserialize(&mut deserializer)
+            .unwrap_or_else(|e| {
+                panic!(
+                    "failed to deserialize string component '{}'\n{}\n{:?}",
+                    name, ron_string, e
+                )
+            });
+        components.push((component, type_registration.clone()));
     } else {
         // Components_meta self made, rest are 3rd party plugins in blender I have
         if !ignore.iter().any(|s| capitalized_type_name.contains(s)) {
@@ -132,7 +120,6 @@ fn bevy_components_string_to_components(
                 parsed_value
             );
 
-            //info!("{:?} - {:?} - {:?}", name, key, ron_string);
             let mut deserializer = ron::Deserializer::from_str(ron_string.as_str())
                 .expect("deserialzer should have been generated from string");
             let reflect_deserializer = ReflectDeserializer::new(type_registry);

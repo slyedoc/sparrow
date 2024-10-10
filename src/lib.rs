@@ -7,6 +7,9 @@ pub use registry::*;
 mod process_gltfs;
 use process_gltfs::*;
 
+mod extra_settings;
+pub use extra_settings::*;
+
 mod fake_entity;
 
 mod ronstring_to_reflect_component;
@@ -48,7 +51,9 @@ pub enum SceneSet {
 
 impl Plugin for SparrowPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(SparrowConfig {
+        app
+        .add_plugins(extra_settings::plugin)
+        .insert_resource(SparrowConfig {
             save_path: self.save_path.clone(),
             component_filter: self.component_filter.clone(),
             ignore: self.ignore.clone(),

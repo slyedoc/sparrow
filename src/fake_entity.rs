@@ -4,7 +4,7 @@ use bevy::{
     core::Name,
     ecs::system::SystemParam,
     gltf::GltfExtras,
-    log::{info, warn},
+    log::warn,
     prelude::{HierarchyQueryExt, Parent, Query, With},
     reflect::ReflectDeserialize,
     scene::{InstanceId, SceneInstance},
@@ -55,7 +55,7 @@ impl<'de> Deserialize<'de> for Entity {
         let entity_data = EntityData::deserialize(deserializer)?;
 
         let entity = if let Some(name) = entity_data.name {
-            info!("Found name {name}");
+            // info!("Found name {name}");
             let BadWorldAccess {
                 names,
                 hierarchy,

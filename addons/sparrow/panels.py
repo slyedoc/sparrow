@@ -349,7 +349,7 @@ class SPARROW_PT_OutputPanel(SPARROW_PT_Output, bpy.types.Panel):
         col.operator(SPARROW_OT_ExportCurrentScene.bl_idname, icon="FILE", text="Export Current Scene")
                 
         col = layout.column_flow(columns=1)
-        col.operator(SPARROW_OT_ExportScenes.bl_idname, icon="RENDER_STILL", text="Export Scenes")                
+        col.operator(SPARROW_OT_ExportSelectedScenes.bl_idname, icon="RENDER_STILL", text="Export Scenes")                
         
         row = col.row()
         row.label(text="Selected")
@@ -387,7 +387,10 @@ class SPARROW_PT_OutputPanel(SPARROW_PT_Output, bpy.types.Panel):
 
         row = box.row()
         row.label(text="Format")
-        row.prop(settings, "gltf_format", text="")        
+        row.prop(settings, "gltf_format", text="") 
+
+        row = box.row()
+        row.prop(settings, "save_on_export")          
 
         row = box.row()
         row.operator(SPARROW_OT_LoadRegistry.bl_idname, text="Reload Registry")

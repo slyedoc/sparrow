@@ -1,1 +1,1 @@
-{ "space_fighter::assets::physics::RevoluteJointHelper":(anchor: Entity(name: Some("TurretRail_base")), angular_velocity_damping: 0.0, compliance: 0.0, linear_velocity_damping: 0.0, local_anchor1: (0.0, 0.0, 0.0), local_anchor2: (0.0, 2.190000057220459, 0.0), object: Entity(name: Some("TurretRail_rotation"))) }
+{ "sparrow::extra_settings::SceneGravity":(Vec3(x:0.0, y:0.0, z:-9.8100004196167)) }

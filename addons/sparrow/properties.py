@@ -60,7 +60,8 @@ class SPARROW_PG_Settings(PropertyGroup):
         json_str = json.dumps({ 
             'registry_file': self.registry_file,
             'assets_path': self.assets_path,
-            'gltf_format': self.gltf_format
+            'gltf_format': self.gltf_format,
+            'save_on_export': self.save_on_export
         })
         # update or create the text datablock
         if SETTING_NAME in bpy.data.texts:
@@ -90,12 +91,15 @@ class SPARROW_PG_Settings(PropertyGroup):
                     defs = data.get("$defs", {})                    
             except (IOError, json.JSONDecodeError) as e:
                 print(f"ERROR: An error occurred while reading the file: {e}")
-        
+
+      
         if not defs:
+            print(f"ERROR: registry: is None")
             if bpy.app.timers.is_registered(watch_registry):
                 bpy.app.timers.unregister(watch_registry)
             return
 
+        print(f"INFO: registry: {len(defs)} type_infos from : {self.registry_file}")  
         if not bpy.app.timers.is_registered(watch_registry):
              bpy.app.timers.register(watch_registry)
 
@@ -117,7 +121,7 @@ class SPARROW_PG_Settings(PropertyGroup):
             added.long_name = long_name
             added.short_name = short_name
         
-        #print(f"INFO: refresh the ui")
+        print(f"INFO: refresh the ui")
         # now force refresh the ui 
         # for area in bpy.context.screen.areas:
         #     for region in area.regions:
@@ -151,10 +155,13 @@ class SPARROW_PG_Settings(PropertyGroup):
         update= save_settings,
         default='GLB'
     )# type: ignore
-    #  EnumProperty(options = set(), name='Format', default='GLB', description='Output format', items=[
-    #     ('GLB', 'glTF Binary (.glb)', 'Exports single file, with all data packed in binary form. Most efficient and protable, but more difficult to edit later'),
-    #     ('GLTF_SEPARATE', 'glTF Separate (.gltf + .bin + textures)', 'Exports multiple files, with separate JSON, binary and texture data. Easiest to edit later')
-    # ]) 
+    save_on_export: BoolProperty(
+        options = set(), 
+        name="Save on Export",
+        description="Save on Export",
+        update= save_settings,
+        default=True
+    )# type: ignore
      
     ## not saved
     # Last scene for collection instance edit
@@ -417,7 +424,7 @@ class ComponentsRegistry(PropertyGroup):
         # generate_propertyGroups_for_components
         for component_name in self.type_infos.keys(): 
             definition = self.type_infos.get(component_name, None)      
-            print("processing component", component_name)
+            #print("processing component", component_name)
             self.process_component(definition, update_calback_helper(definition, update_component, component_name), None, [])
 
         #  process custom types if we had to add any wrapper types on the fly, process them now
@@ -518,7 +525,7 @@ class ComponentsRegistry(PropertyGroup):
         component_definition: TypeInfo = self.type_infos.get(long_name, None)
 
         if component_definition is None:
-            print(f"{long_name} on {item.name} not found in registry {len(self.type_infos)} ")
+            print(f"{long_name} on {item.name} not found in registry")
             return(None, None)
         
         short_name = component_definition["short_name"]
@@ -688,28 +695,23 @@ class ComponentsRegistry(PropertyGroup):
             __annotations__ = __annotations__ | self.process_structs(definition, properties, update, nesting_long_names)
             with_properties = True
             tupple_or_struct = "struct"
-            print(f"struct")
 
         if has_prefix_items:
             __annotations__ = __annotations__ | self.process_tupples(definition, prefix_items, update, nesting_long_names)
             with_items = True
             tupple_or_struct = "tupple"
-            print(f"tupple")
 
         if is_enum:
             __annotations__ = __annotations__ | self.process_enum(definition, update, nesting_long_names)
             with_enum = True
-            print(f"enum")
 
         if is_list:
             __annotations__ = __annotations__ | self.process_list(definition, update, nesting_long_names)
             with_list= True
-            print(f"list")
 
         if is_map:
             __annotations__ = __annotations__ | self.process_map(definition, update, nesting_long_names)
             with_map = True
-            print(f"map")
 
         
         field_names = []

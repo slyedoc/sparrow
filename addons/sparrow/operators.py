@@ -69,6 +69,13 @@ class SPARROW_OT_EditCollectionInstance(Operator):
             # Hotkey for this is / (forward slash) and is a toggle, 
             # this way you can see rest of the scene if needed
             #bpy.ops.view3d.localview()
+            
+            # Move focus to the Outliner and show the active object
+            for area in bpy.context.window.screen.areas:
+                if area.type == 'OUTLINER':
+                    with context.temp_override(area=area):
+                        bpy.ops.outliner.show_active()  # Focus the Outliner on the active object
+                    break
 
             # Zoom to the selected object
             bpy.ops.view3d.view_selected()
@@ -100,6 +107,9 @@ class SPARROW_OT_ExitCollectionInstance(Operator):
         bpy.context.window.scene = settings.last_scene
         settings.last_scene = None
 
+        # Zoom to the selected object
+        bpy.ops.view3d.view_selected()
+
         return {'FINISHED'}
 
 class SPARROW_OT_ExportCurrentScene(Operator):
@@ -110,9 +120,11 @@ class SPARROW_OT_ExportCurrentScene(Operator):
 
     def execute(self, context):       
         settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings  
-        p = os.path.join(settings.assets_path, SCENE_FOLDER)
-        os.makedirs(p, exist_ok=True)
-        
+ 
+        # Trigger the save operation
+        if settings.save_on_export:
+            bpy.ops.wm.save_mainfile()
+
         # save active scene
         active_scene = bpy.context.window.scene
         active_collection = bpy.context.view_layer.active_layer_collection
@@ -137,13 +149,13 @@ class SPARROW_OT_ExportCurrentScene(Operator):
         scene_props: SPARROW_PG_SceneProps = scene.sparrow_scene_props
 
         if scene_props.scene_export:    
-            if export_scene(settings, p, area, region, scene):
+            if export_scene(settings, area, region, scene):
                 success_scene.append(scene.name)
             else:
                 failure_scene.append(scene.name)
         
         if scene_props.blueprint_export:
-            (s, f) = export_scene_blueprints(settings, p, area, region, scene)
+            (s, f) = export_scene_blueprints(settings, area, region, scene)
             success_blueprints.extend(s)
             failure_blueprints.extend(f)
 
@@ -165,17 +177,19 @@ class SPARROW_OT_ExportCurrentScene(Operator):
         return {'FINISHED'} 
 
 # export all scenes that are marked for export
-class SPARROW_OT_ExportScenes(Operator):
-    """Export Enabled Scenes"""      # Use this as a tooltip for menu items and buttons.
-    bl_idname = "sparrow.export_scenes"        # Unique identifier for buttons and menu items to reference.
-    bl_label = "Export Scenes"         # Display name in the interface.
+class SPARROW_OT_ExportSelectedScenes(Operator):
+    """Export Selected Scenes"""      # Use this as a tooltip for menu items and buttons.
+    bl_idname = "sparrow.export_selected_scenes"        # Unique identifier for buttons and menu items to reference.
+    bl_label = "Export Selected Scenes"         # Display name in the interface.
     bl_options = {'REGISTER', 'UNDO'}  # Enable undo for the operator.
 
     def execute(self, context):       
         settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings  
-        p = os.path.join(settings.assets_path, SCENE_FOLDER)
-        os.makedirs(p, exist_ok=True)
         
+        # Trigger the save operation
+        if settings.save_on_export:
+            bpy.ops.wm.save_mainfile()
+
         # save active scene
         active_scene = bpy.context.window.scene
         active_collection = bpy.context.view_layer.active_layer_collection
@@ -202,12 +216,12 @@ class SPARROW_OT_ExportScenes(Operator):
                 continue
 
             if scene_props.scene_export:    
-                if export_scene(settings, p, area, region, scene):
+                if export_scene(settings, area, region, scene):
                     success_scene.append(scene.name)
                 else:
                     failure_scene.append(scene.name)
             if scene_props.blueprint_export:
-                (s, f) = export_scene_blueprints(settings, p, area, region, scene)
+                (s, f) = export_scene_blueprints(settings, area, region, scene)
                 success_blueprints.extend(s)
                 failure_blueprints.extend(f)
 
@@ -228,66 +242,6 @@ class SPARROW_OT_ExportScenes(Operator):
             self.report({'INFO'}, f"Exported {success_scene} scenes and {success_blueprints} blueprints")
 
         return {'FINISHED'} 
-
-class SPARROW_OT_ExportBlueprints(Operator):
-    """Export Enabled Blueprint Scenes"""      # Use this as a tooltip for menu items and buttons.
-    bl_idname = "sparrow.export_blueprint_scenes"        # Unique identifier for buttons and menu items to reference.
-    bl_label = "Export Blueprint Scenes"         # Display name in the interface.
-    bl_options = {'REGISTER', 'UNDO'}  # Enable undo for the operator.
-
-    def execute(self, context):       
-        settings: SPARROW_PG_Settings  = bpy.context.window_manager.sparrow_settings  
-        p = os.path.join(settings.assets_path, BLUEPRINT_FOLDER)  
-        os.makedirs(p, exist_ok=True)
-
-        # save active scene
-        active_scene = bpy.context.window.scene
-        active_collection = bpy.context.view_layer.active_layer_collection
-        active_mode = bpy.context.active_object.mode if bpy.context.active_object is not None else None
-        debug_mode = bpy.app.debug_value;
-        bpy.app.debug_value = 2 # so only see warnings from gltf exporter
-
-        # we change the mode to object mode, otherwise the gltf exporter is not happy
-        if active_mode is not None and active_mode != 'OBJECT':
-            print("setting to object mode", active_mode)
-            bpy.ops.object.mode_set(mode='OBJECT')
-
-        area = [area for area in bpy.context.screen.areas if area.type == "VIEW_3D"][0]
-        region = [region for region in area.regions if region.type == 'WINDOW'][0]
-
-        success = 0
-        failure = 0
-
-        for scene in bpy.data.scenes:
-            scene_props: SPARROW_PG_SceneProps = scene.sparrow_scene_props
-            if scene_props.blueprint_export:
-                (s, f) = export_scene_blueprints(settings, p, area, region, scene)
-                success += s
-                failure += f
-
-
-        # reset active scene
-        bpy.context.window.scene = active_scene
-        # reset active collection
-        bpy.context.view_layer.active_layer_collection = active_collection
-        # reset mode
-        if active_mode is not None:
-            bpy.ops.object.mode_set( mode = active_mode )
-        
-        bpy.app.debug_value = debug_mode
-        
-        if failure > 0:
-            self.report({'ERROR'}, f"Exported {success} blueprints, {failure} failed")
-        else:
-            self.report({'INFO'}, f"Exported {success} blueprints")
-
-        return {'FINISHED'}            # Lets Blender know the operator finished successfully.
-
-
-
-
-#Recursivly transverse layer_collection for a particular name
-
 
 class SPARROW_OT_LoadRegistry(Operator):
     """Load the registry file"""
