@@ -1,6 +1,6 @@
 # Notes
 
-[ run condisions](https://github.com/mvlabat/bevy_egui/issues/218)
+[ run criteria ](https://github.com/mvlabat/bevy_egui/issues/218)
 
 Notes on blender camera setup
 [Github Notes #223](https://github.com/kaosat-dev/Blenvy/issues/223)
@@ -20,13 +20,3 @@ Icons List - [here](docs/icons.md)
 
 [blender debug memory](https://docs.blender.org/manual/en/latest/advanced/operators.html)
 
-## Setup
-
-To make switching between branches easier, I've added a symlink to the `sparrow` addon in the Blender config directory. This way, I can just switch branches and the addon will always be up to date.
-
-Could so set additional script directory to blender
-
-```bash
-cd ~/.config/blender/4.3/scripts/addons 
-ln -s ~/code/p/sparrow/addons/sparrow/ sparrow
-```

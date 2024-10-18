@@ -1,6 +1,22 @@
 # Sparrow
 
-This is my take on [Blenvy](https://github.com/kaosat-dev/Blenvy) and [Auto Bake](https://blendermarket.com/products/autobake)
+This is my take on [Blenvy](https://github.com/kaosat-dev/Blenvy) with [Auto Bake](https://blendermarket.com/products/autobake)
+
+
+# TODO
+
+- [ ] Fix desync component_list
+- [ ] Better 'world' shader export
+  - see [The_Lightmapper](https://github.com/Naxela/The_Lightmapper/)
+- [ ] Setup github action to build zip file for blender
+
+## Setup
+
+- Blender
+  - just requires the addon in the `addons` folder. 
+- Bevy
+  - requires the 
+
 
 
 ## License

@@ -5,7 +5,6 @@ from typing import Any, Dict
 from .export import export_scene, export_scene_blueprints
 from .utils import *
 from .properties import *
-from .blueprints import *
 
 import bpy
 import os
@@ -170,9 +169,9 @@ class SPARROW_OT_ExportCurrentScene(Operator):
         bpy.app.debug_value = debug_mode
 
         if len(failure_scene)  > 0 or len(failure_blueprints) > 0:
-            self.report({'ERROR'}, f"Exported {success_scene} scenes, {failure_scene} failed, exported {success_blueprints} blueprints, {failure_blueprints} failed")
+            self.report({'ERROR'}, f"Exported {len(success_scene)} scenes, {failure_scene} failed, exported {len(success_blueprints)} blueprints, {failure_blueprints} failed")
         else:
-            self.report({'INFO'}, f"Exported {success_scene} scenes and {success_blueprints} blueprints")
+            self.report({'INFO'}, f"Exported {len(success_scene)} scenes and {len(success_blueprints)} blueprints")
 
         return {'FINISHED'} 
 
@@ -237,9 +236,9 @@ class SPARROW_OT_ExportSelectedScenes(Operator):
         bpy.app.debug_value = debug_mode
 
         if len(failure_scene) > 0 or len(failure_blueprints) > 0:
-            self.report({'ERROR'}, f"Exported {success_scene} scenes, {failure_scene} failed, exported {success_blueprints} blueprints, {failure_blueprints} failed")
+            self.report({'ERROR'}, f"Exported {len(success_scene)} scenes, {failure_scene} failed, exported {len(success_blueprints)} blueprints, {failure_blueprints} failed")
         else:
-            self.report({'INFO'}, f"Exported {success_scene} scenes and {success_blueprints} blueprints")
+            self.report({'INFO'}, f"Exported {len(success_scene)} scenes and {len(success_blueprints)} blueprints")
 
         return {'FINISHED'} 
 

@@ -6,7 +6,7 @@ import json
 #   viewing: bevy_components and components_meta states
 
 # Safety first
-for_real = True
+for_real = False
 
 delete_empty = False
 # List of objects to print out debug info for
@@ -14,7 +14,7 @@ debug_objects = list(["test"]) # ["*"] for all objects
 
 # List of properties to delete if found on object
 
-delete_props = list(["BlenderLightShadows"]) 
+delete_props = list(["Sparrow_blueprint"]) 
 # "shipwright_collection", "plating_generator", "shape_generator_collection",
 
 delete_bevy_components = list(["probe::assets::FlattenHelper"])

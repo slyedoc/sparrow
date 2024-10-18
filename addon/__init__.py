@@ -29,12 +29,6 @@ bl_info = {
 }
 
 import bpy
-import os
-import platform
-import re
-import math
-import mathutils
-import functools
 
 from bpy.app.handlers import persistent
 
@@ -179,7 +173,6 @@ def unregister():
     
     for cls in classes:
         bpy.utils.unregister_class(cls)
-
 
     del bpy.types.WindowManager.sparrow_settings
     del bpy.types.Scene.sparrow_scene_props

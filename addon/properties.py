@@ -55,6 +55,31 @@ class SPARROW_PG_Component(PropertyGroup):
 
 SETTING_NAME = ".sparrow_settings"
 class SPARROW_PG_Settings(PropertyGroup):
+
+    def blueprint_folder(self)->str: 
+        return os.path.join(self.assets_path, BLUEPRINT_FOLDER)
+
+    def blueprint_path(self, col: bpy.types.Collection)->str:         
+        if self.gltf_format == 'GLB':
+            return os.path.join(self.blueprint_folder(), f"{col.name}.glb")
+        else:
+            return os.path.join(self.blueprint_folder(), f"{col.name}")             
+    # bevy asset path to the blueprint    
+    def blueprint_asset_path(self, col: bpy.types.Collection)->str: 
+        if self.gltf_format == 'GLB':
+            return os.path.join(BLUEPRINT_FOLDER, f"{col.name}.glb")
+        else:
+            return os.path.join(BLUEPRINT_FOLDER, f"{col.name}.gltf") 
+        
+    def scene_folder(self)->str:
+        return os.path.join(self.assets_path, SCENE_FOLDER)
+
+    def scene_path(self, scene: bpy.types.Scene)->str:
+        if self.gltf_format == 'GLB':
+            return os.path.join(self.scene_folder(), f"{scene.name}.glb")
+        else:
+            return os.path.join(self.scene_folder(), f"{scene.name}")            
+            
     # save the settings to a text datablock    
     def save_settings(self, context):
         json_str = json.dumps({ 
@@ -94,7 +119,6 @@ class SPARROW_PG_Settings(PropertyGroup):
 
       
         if not defs:
-            print(f"ERROR: registry: is None")
             if bpy.app.timers.is_registered(watch_registry):
                 bpy.app.timers.unregister(watch_registry)
             return
