@@ -3,7 +3,7 @@ use std::any::TypeId;
 use bevy::core::Name;
 use bevy::log::warn;
 use bevy::reflect::serde::ReflectDeserializer;
-use bevy::reflect::{GetTypeRegistration, Reflect, TypeRegistration, TypeRegistry};
+use bevy::reflect::{GetTypeRegistration, PartialReflect, TypeRegistration, TypeRegistry};
 use bevy::utils::HashMap;
 use ron::Value;
 use serde::de::DeserializeSeed;
@@ -15,10 +15,10 @@ pub(crate) fn ronstring_to_reflect_component(
     type_registry: &mut TypeRegistry,
     name: &Option<&Name>, // For better error messages
     ignore: &[String],    // ignore these components
-) -> Vec<(Box<dyn Reflect>, TypeRegistration)> {
+) -> Vec<(Box<dyn PartialReflect>, TypeRegistration)> {
     
     let lookup: HashMap<String, Value> = ron::from_str(ron_string).unwrap();
-    let mut components: Vec<(Box<dyn Reflect>, TypeRegistration)> = Vec::new();
+    let mut components: Vec<(Box<dyn PartialReflect>, TypeRegistration)> = Vec::new();
 
     for (component, value) in lookup.into_iter() {
         //info!("{:?} - {:?}: {:?}", &name, &component, &value);
@@ -53,7 +53,7 @@ fn components_string_to_components(
     name: String,
     parsed_value: String,
     type_registry: &TypeRegistry,
-    components: &mut Vec<(Box<dyn Reflect>, TypeRegistration)>,
+    components: &mut Vec<(Box<dyn PartialReflect>, TypeRegistration)>,
     ignore: &[String],
 ) {
     let type_string = name.replace("component: ", "").trim().to_string();
@@ -94,7 +94,7 @@ fn components_string_to_components(
 fn bevy_components_string_to_components(
     parsed_value: String,
     type_registry: &mut TypeRegistry,
-    components: &mut Vec<(Box<dyn Reflect>, TypeRegistration)>,
+    components: &mut Vec<(Box<dyn PartialReflect>, TypeRegistration)>,
     name: &Option<&Name>, // For better error messages
 ) {
     let Ok(lookup) = ron::from_str::<HashMap<String, Value>>(&parsed_value) else {

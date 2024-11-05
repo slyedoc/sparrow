@@ -1,5 +1,7 @@
-use std::{alloc::Layout, cell::Cell, num::NonZeroU32};
+// Based on https://github.com/kaosat-dev/Blenvy/pull/236 
 
+
+use std::{alloc::Layout, cell::Cell, num::NonZeroU32};
 use bevy::{
     core::Name,
     ecs::system::SystemParam,
@@ -30,7 +32,7 @@ const _: () = {
     assert!(real.align() == fake.align());
 };
 
-#[derive(Clone)]
+#[derive(Clone, Hash, Debug, PartialEq, Eq)]
 #[repr(C, align(8))]
 pub(crate) struct Entity {
     // Do not reorder the fields here. The ordering is equivalent to bevy's `Entity`
@@ -157,8 +159,8 @@ const _: () = {
             static CELL: bevy_reflect::utility::NonGenericTypeInfoCell =
                 bevy_reflect::utility::NonGenericTypeInfoCell::new();
             CELL.get_or_set(|| {
-                let info = bevy_reflect::ValueInfo::new::<bevy::ecs::entity::Entity>(); // this is changed
-                bevy_reflect::TypeInfo::Value(info)
+                let info = bevy_reflect::OpaqueInfo::new::<bevy::ecs::entity::Entity>(); // this is changed
+                bevy_reflect::TypeInfo::Opaque(info)
             })
         }
     }
@@ -166,12 +168,6 @@ const _: () = {
     where
         Self: ::core::any::Any + ::core::marker::Send + ::core::marker::Sync,
     {
-        #[inline]
-        fn get_represented_type_info(
-            &self,
-        ) -> ::core::option::Option<&'static bevy_reflect::TypeInfo> {
-            ::core::option::Option::Some(<Self as bevy_reflect::Typed>::type_info())
-        }
         #[inline]
         fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn ::core::any::Any> {
             // this is changed
@@ -206,32 +202,7 @@ const _: () = {
         fn as_reflect_mut(&mut self) -> &mut dyn bevy_reflect::Reflect {
             self
         }
-        #[inline]
-        fn clone_value(&self) -> ::std::boxed::Box<dyn bevy_reflect::Reflect> {
-            ::std::boxed::Box::new(::core::clone::Clone::clone(self))
-        }
-        #[inline]
-        fn try_apply(
-            &mut self,
-            value: &dyn bevy_reflect::Reflect,
-        ) -> ::core::result::Result<(), bevy_reflect::ApplyError> {
-            let any = bevy_reflect::Reflect::as_any(value);
-            if let ::core::option::Option::Some(value) =
-                <dyn ::core::any::Any>::downcast_ref::<Self>(any)
-            {
-                *self = ::core::clone::Clone::clone(value);
-            } else {
-                return ::core::result::Result::Err(bevy_reflect::ApplyError::MismatchedTypes {
-                    from_type: ::core::convert::Into::into(
-                        bevy_reflect::DynamicTypePath::reflect_type_path(value),
-                    ),
-                    to_type: ::core::convert::Into::into(
-                        <Self as bevy_reflect::TypePath>::type_path(),
-                    ),
-                });
-            }
-            ::core::result::Result::Ok(())
-        }
+
         #[inline]
         fn set(
             &mut self,
@@ -240,32 +211,120 @@ const _: () = {
             *self = <dyn bevy_reflect::Reflect>::take(value)?;
             ::core::result::Result::Ok(())
         }
+
+    }
+    impl bevy_reflect::PartialReflect for Entity
+    where
+        Entity: ::core::any::Any + ::core::marker::Send + ::core::marker::Sync,
+    {
+        #[inline]
+        fn get_represented_type_info(
+            &self,
+        ) -> ::core::option::Option<&'static bevy_reflect::TypeInfo> {
+            ::core::option::Option::Some(<Self as bevy_reflect::Typed>::type_info())
+        }
+        #[inline]
+        fn clone_value(&self) -> ::std::boxed::Box<dyn bevy_reflect::PartialReflect> {
+            ::std::boxed::Box::new(::core::clone::Clone::clone(self))
+        }
+
+        #[inline]
+        fn try_apply(
+            &mut self,
+            value: &dyn bevy_reflect::PartialReflect,
+        ) -> ::core::result::Result<(), bevy_reflect::ApplyError> {
+            if let ::core::option::Option::Some(value) =
+                <dyn bevy_reflect::PartialReflect>::try_downcast_ref::<Self>(value)
+            {
+                *self = ::core::clone::Clone::clone(value);
+                return ::core::result::Result::Ok(());
+            }
+            ::core::result::Result::Err(bevy_reflect::ApplyError::MismatchedTypes {
+                from_type: ::core::convert::Into::into(
+                    bevy_reflect::DynamicTypePath::reflect_type_path(value),
+                ),
+                to_type: ::core::convert::Into::into(<Self as bevy_reflect::TypePath>::type_path()),
+            })
+        }
         #[inline]
         fn reflect_kind(&self) -> bevy_reflect::ReflectKind {
-            bevy_reflect::ReflectKind::Value
+            bevy_reflect::ReflectKind::Opaque
         }
         #[inline]
         fn reflect_ref(&self) -> bevy_reflect::ReflectRef {
-            bevy_reflect::ReflectRef::Value(self)
+            bevy_reflect::ReflectRef::Opaque(self)
         }
         #[inline]
         fn reflect_mut(&mut self) -> bevy_reflect::ReflectMut {
-            bevy_reflect::ReflectMut::Value(self)
+            bevy_reflect::ReflectMut::Opaque(self)
         }
         #[inline]
         fn reflect_owned(self: ::std::boxed::Box<Self>) -> bevy_reflect::ReflectOwned {
-            bevy_reflect::ReflectOwned::Value(self)
+            bevy_reflect::ReflectOwned::Opaque(self)
+        }
+        #[inline]
+        fn try_into_reflect(
+            self: ::std::boxed::Box<Self>,
+        ) -> ::core::result::Result<
+            ::std::boxed::Box<dyn bevy_reflect::Reflect>,
+            ::std::boxed::Box<dyn bevy_reflect::PartialReflect>,
+        > {
+            ::core::result::Result::Ok(self)
+        }
+        #[inline]
+        fn try_as_reflect(&self) -> ::core::option::Option<&dyn bevy_reflect::Reflect> {
+            ::core::option::Option::Some(self)
+        }
+        #[inline]
+        fn try_as_reflect_mut(&mut self) -> ::core::option::Option<&mut dyn bevy_reflect::Reflect> {
+            ::core::option::Option::Some(self)
+        }
+        #[inline]
+        fn into_partial_reflect(
+            self: ::std::boxed::Box<Self>,
+        ) -> ::std::boxed::Box<dyn bevy_reflect::PartialReflect> {
+            self
+        }
+        #[inline]
+        fn as_partial_reflect(&self) -> &dyn bevy_reflect::PartialReflect {
+            self
+        }
+        #[inline]
+        fn as_partial_reflect_mut(&mut self) -> &mut dyn bevy_reflect::PartialReflect {
+            self
+        }
+        fn reflect_hash(&self) -> ::core::option::Option<u64> {
+            use ::core::hash::{Hash, Hasher};
+            let mut hasher = bevy_reflect::utility::reflect_hasher();
+            Hash::hash(&::core::any::Any::type_id(self), &mut hasher);
+            Hash::hash(self, &mut hasher);
+            ::core::option::Option::Some(Hasher::finish(&hasher))
+        }
+        fn reflect_partial_eq(
+            &self,
+            value: &dyn bevy_reflect::PartialReflect,
+        ) -> ::core::option::Option<bool> {
+            let value = <dyn bevy_reflect::PartialReflect>::try_downcast_ref::<Self>(value);
+            if let ::core::option::Option::Some(value) = value {
+                ::core::option::Option::Some(::core::cmp::PartialEq::eq(self, value))
+            } else {
+                ::core::option::Option::Some(false)
+            }
+        }
+        fn debug(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+            ::core::fmt::Debug::fmt(self, f)
         }
     }
+
     impl bevy_reflect::FromReflect for Entity
     where
         Self: ::core::any::Any + ::core::marker::Send + ::core::marker::Sync,
     {
-        fn from_reflect(reflect: &dyn bevy_reflect::Reflect) -> ::core::option::Option<Self> {
+        fn from_reflect(
+            reflect: &dyn bevy_reflect::PartialReflect,
+        ) -> ::core::option::Option<Self> {
             ::core::option::Option::Some(::core::clone::Clone::clone(
-                <dyn ::core::any::Any>::downcast_ref::<Entity>(
-                    <dyn bevy_reflect::Reflect>::as_any(reflect),
-                )?,
+                <dyn bevy_reflect::PartialReflect>::try_downcast_ref::<Entity>(reflect)?,
             ))
         }
     }

@@ -59,11 +59,15 @@ class SPARROW_PG_Settings(PropertyGroup):
     def blueprint_folder(self)->str: 
         return os.path.join(self.assets_path, BLUEPRINT_FOLDER)
 
-    def blueprint_path(self, col: bpy.types.Collection)->str:         
+    def blueprint_path(self, col: bpy.types.Collection, include_gltf: bool = False)->str:         
         if self.gltf_format == 'GLB':
             return os.path.join(self.blueprint_folder(), f"{col.name}.glb")
         else:
-            return os.path.join(self.blueprint_folder(), f"{col.name}")             
+            if include_gltf:
+                return os.path.join(self.blueprint_folder(), f"{col.name}.gltf")
+            else:
+                return os.path.join(self.blueprint_folder(), f"{col.name}")
+                     
     # bevy asset path to the blueprint    
     def blueprint_asset_path(self, col: bpy.types.Collection)->str: 
         if self.gltf_format == 'GLB':
@@ -74,11 +78,15 @@ class SPARROW_PG_Settings(PropertyGroup):
     def scene_folder(self)->str:
         return os.path.join(self.assets_path, SCENE_FOLDER)
 
-    def scene_path(self, scene: bpy.types.Scene)->str:
+    def scene_path(self, scene: bpy.types.Scene, include_gltf: bool = False)->str:
         if self.gltf_format == 'GLB':
             return os.path.join(self.scene_folder(), f"{scene.name}.glb")
         else:
-            return os.path.join(self.scene_folder(), f"{scene.name}")            
+            if include_gltf:
+                
+                return os.path.join(self.scene_folder(), f"{scene.name}.gltf")
+            else:
+                return os.path.join(self.scene_folder(), f"{scene.name}")            
             
     # save the settings to a text datablock    
     def save_settings(self, context):
@@ -123,14 +131,12 @@ class SPARROW_PG_Settings(PropertyGroup):
                 bpy.app.timers.unregister(watch_registry)
             return
 
-        print(f"INFO: registry: {len(defs)} type_infos from : {self.registry_file}")  
         if not bpy.app.timers.is_registered(watch_registry):
              bpy.app.timers.register(watch_registry)
 
-        #generate_propertyGroups_for_components
         registry.load_schema(defs)
 
-        print(f"INFO: registry: {len(registry.type_infos)} type_infos from : {self.registry_file}")
+        print(f"INFO: registry:  {len(registry.type_infos)} type_infos from : {self.registry_file}")
         
         # build component_list, from new registry data
         self.component_list.clear()
@@ -147,10 +153,10 @@ class SPARROW_PG_Settings(PropertyGroup):
         
         print(f"INFO: refresh the ui")
         # now force refresh the ui 
-        # for area in bpy.context.screen.areas:
-        #     for region in area.regions:
-        #         if region.type == 'UI':
-        #             region.tag_redraw()
+        for area in bpy.context.screen.areas:
+            for region in area.regions:
+                if region.type == 'UI':
+                    region.tag_redraw()
 
         bpy.ops.object.refresh_custom_properties_all()
 
@@ -428,7 +434,6 @@ class ComponentsRegistry(PropertyGroup):
         return property_group_class
 
     def load_schema(self, defs: Dict[str, Any]):
-        print("load schema", self)
 
         # clear all existing data
         self.long_names_to_propgroup_names.clear()

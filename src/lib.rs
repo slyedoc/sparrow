@@ -13,11 +13,17 @@ pub use extras::*;
 
 #[cfg(feature = "animation")]
 mod animations;
-#[cfg(feature = "animation")]
-pub use animations::*;
 
 mod fake_entity;
 mod ronstring_to_reflect_component;
+
+pub mod prelude {
+    #[cfg(feature = "animation")]
+    pub use crate::animations::*;
+    pub use crate::{
+        extras::*, SceneLoaded, SceneLoading, SparrowConfig, SparrowPlugin, SparrowSet,
+    };
+}
 
 #[derive(Debug, Clone)]
 /// Plugin for gltf blueprints
@@ -31,7 +37,7 @@ pub struct SparrowPlugin {
 impl Default for SparrowPlugin {
     fn default() -> Self {
         Self {
-            save_path: PathBuf::from("../art/registry.json"),
+            save_path: PathBuf::from("../registry.json"),
             component_filter: SceneFilter::default(),
             ignore: Vec::new(),
         }
@@ -51,7 +57,7 @@ pub struct SparrowConfig {
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum SparrowSet {
     Extras, // for adding components from gltf extras
-    Post,   // for any post processing , dont use ourselves
+    Post,   // for any post processing , don't use ourselves
 }
 
 impl Plugin for SparrowPlugin {
@@ -71,7 +77,6 @@ impl Plugin for SparrowPlugin {
             (SparrowSet::Extras, SparrowSet::Post)
                 .chain()
                 .after(TransformSystem::TransformPropagate),
-            //.before(PhysicsSet::Sync),
         );
 
         #[cfg(feature = "registry")]
@@ -102,7 +107,7 @@ impl Plugin for SparrowPlugin {
                 (spawn_blueprints, check_scene_loading).in_set(SparrowSet::Post),
             );
 
-        #[cfg(feature = "dev")]
+        #[cfg(feature = "reload")]
         app.add_systems(Update, reload_scene_on_asset_change);
         // .add_systems(
         //     PostUpdate,
@@ -143,7 +148,7 @@ fn spawn_blueprints(
         if let Some(LoadState::Loaded) = asset_server.get_load_state(&gltf) {
             debug!("Spawning blueprint already loaded: {:?}", blueprint.0);
             let scene = first_scene(&gltf, &assets_gltf);
-            commands.entity(e).insert((SceneLoaded(gltf), scene));
+            commands.entity(e).insert((SceneLoaded(gltf), SceneRoot(scene)));
         } else {
             debug!("Spawning blueprint once loaded: {:?}", blueprint.0);
             commands.entity(e).insert(SceneLoading(gltf));
@@ -160,19 +165,20 @@ fn check_scene_loading(
     for (e, name, gltf) in query.iter() {
         if let Some(LoadState::Loaded) = asset_server.get_load_state(&gltf.0) {
             let scene = first_scene(&gltf.0, &gltfs);
-            info!("Spawning blueprint after it loaded: {:?}", name);
+            debug!("Spawning blueprint after it loaded: {:?}", name);
             commands
                 .entity(e)
                 .remove::<SceneLoading>()
-                .insert((SceneLoaded(gltf.0.clone()), scene));
+                .insert((SceneLoaded(gltf.0.clone()), SceneRoot(scene)));
         }
     }
 }
 
+#[cfg(feature = "reload")]
 fn reload_scene_on_asset_change(
     mut commands: Commands,
     mut asset_event: EventReader<AssetEvent<Scene>>,
-    scenes: Query<(Entity, &Handle<Scene>, Option<&Name>)>,
+    scenes: Query<(Entity, &SceneRoot, Option<&Name>)>,
 ) {
     for event in asset_event.read() {
         match event {

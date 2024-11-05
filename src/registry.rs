@@ -4,8 +4,7 @@ use bevy::{
 };
 use serde_json::{json, Map, Value};
 use std::{
-    fs::File,
-    path::{Path, PathBuf},
+    env, fs::File, path::{Path, PathBuf}
 };
 
 use crate::SparrowConfig;
@@ -16,13 +15,23 @@ pub struct AssetRoot(pub PathBuf);
 pub fn export_types(world: &mut World) {
     let config = world.get_resource::<SparrowConfig>().unwrap();
 
-    let asset_root = world.resource::<AssetRoot>();
-    let registry_save_path = Path::join(&asset_root.0, &config.save_path);
-    info!("Exporting registry schema: {:?}", registry_save_path);
-    let writer = File::create(&registry_save_path).expect("should have created schema file");
+    //let asset_root = world.resource::<AssetRoot>();
+    let path = env::current_dir().unwrap();
+    let registry_save_path = Path::join(&path, &config.save_path);
 
-    let components_to_filter_out = &config.component_filter.clone();
-    //let resources_to_filter_out = &config.resource_filter.clone();
+    info!("Current directory: {:?}", path);
+    let writer = match File::create(&registry_save_path) {
+        Ok(writer) => writer,
+        Err(e) => {
+            error!("{e}, failed to create file: {:?} ", registry_save_path);
+            return;
+        }
+    };
+
+    let components_to_filter_out = &config.component_filter.clone()
+    .allow::<Entity>()
+    // add some default components
+;
 
     let types = world.resource_mut::<AppTypeRegistry>();    
     let types = types.read();
@@ -31,10 +40,8 @@ pub fn export_types(world: &mut World) {
         .filter(|type_info| {
             let type_id = type_info.type_id();
             components_to_filter_out.is_allowed_by_id(type_id)
-            //    && resources_to_filter_out.is_allowed_by_id(type_id)
         })
         .map(|type_info| {
-
             // TODO: save a default value to registry schema
             // let type_id = type_info.type_id();
             // let type_path = type_info.type_info().type_path();
@@ -55,7 +62,6 @@ pub fn export_types(world: &mut World) {
             //     (None, None) => {},
             // }
 
-           
             export_type(type_info)
         } )
         .collect::<Map<_, _>>();
@@ -70,7 +76,7 @@ pub fn export_types(world: &mut World) {
     )
     .expect("valid json");
 
-    info!("Done exporting registry schema: {:?}", registry_save_path)
+    info!("Done exporting {} registry schema: {:?}", schemas.len(), registry_save_path)
 }
 
 pub fn export_type( reg: &TypeRegistration) -> (String, Value) {
@@ -80,6 +86,10 @@ pub fn export_type( reg: &TypeRegistration) -> (String, Value) {
     let short_name = binding.short_path();    
 
     let mut schema = match t {
+        TypeInfo::Set(_info) => {
+            // TODO: figure out set
+            unreachable!();
+        },
         TypeInfo::Struct(info) => {
             let properties = info
                 .iter()
@@ -188,21 +198,21 @@ pub fn export_type( reg: &TypeRegistration) -> (String, Value) {
                 "long_name": t.type_path(),
                 "type": "array",
                 "type_info": "List",
-                "items": json!({"type": typ(info.item_type_path_table().path())}),
+                "items": json!({"type": typ(info.item_ty().type_path_table().path())}),
             })
         }
         TypeInfo::Array(info) => json!({
             "long_name": t.type_path(),
             "type": "array",
             "type_info": "Array",
-            "items": json!({"type": typ(info.item_type_path_table().path())}),
+            "items": json!({"type": typ(info.item_ty().type_path_table().path())}),
         }),
         TypeInfo::Map(info) => json!({
             "long_name": t.type_path(),
             "type": "object",
             "type_info": "Map",
-            "value_type": json!({"type": typ(info.value_type_path_table().path())}),
-            "key_type": json!({"type": typ(info.key_type_path_table().path())}),
+            "value_type": json!({"type": typ(info.value_ty().type_path_table().path())}),
+            "key_type": json!({"type": typ(info.key_ty().type_path_table().path())}),
         }),
         TypeInfo::Tuple(info) => json!({
             "long_name": t.type_path(),
@@ -215,7 +225,7 @@ pub fn export_type( reg: &TypeRegistration) -> (String, Value) {
                 .collect::<Vec<_>>(),
             "items": [],
         }),
-        TypeInfo::Value(info) => json!({
+        TypeInfo::Opaque(info) => json!({
             "long_name": t.type_path(),
             "type": map_json_type(info.type_path()),
             "type_info": "Value",
@@ -254,45 +264,47 @@ fn map_json_type(t: &str) -> Value {
     .into()
 }
 
+// TODO: Renable inspector_options min max support
+#[allow(unused_mut)]
 fn add_min_max(
     mut val: Value,
-    reg: &TypeRegistration,
-    field_index: usize,
-    variant_index: Option<usize>,
+    _reg: &TypeRegistration,
+    _field_index: usize,
+    _variant_index: Option<usize>,
 ) -> Value {
-    let Some((min, max)) = get_min_max(reg, field_index, variant_index) else {
+    //let Some((min, max)) = get_min_max(reg, field_index, variant_index) else {
         return val;
-    };
-    let obj = val.as_object_mut().unwrap();
-    if let Some(min) = min {
-        obj.insert("minimum".to_owned(), min.into());
-    }
-    if let Some(max) = max {
-        obj.insert("maximum".to_owned(), max.into());
-    }
-    val
+    //};
+    // let obj = val.as_object_mut().unwrap();
+    // if let Some(min) = min {
+    //     obj.insert("minimum".to_owned(), min.into());
+    // }
+    // if let Some(max) = max {
+    //     obj.insert("maximum".to_owned(), max.into());
+    // }
+    // val
 }
 
-fn get_min_max(
-    reg: &TypeRegistration,
-    field_index: usize,
-    variant_index: Option<usize>,
-) -> Option<(Option<f32>, Option<f32>)> {
-    use bevy_inspector_egui::inspector_options::{
-        std_options::NumberOptions, ReflectInspectorOptions, Target,
-    };
+// fn get_min_max(
+//     reg: &TypeRegistration,
+//     field_index: usize,
+//     variant_index: Option<usize>,
+// ) -> Option<(Option<f32>, Option<f32>)> {
+//     use bevy_inspector_egui::inspector_options::{
+//         std_options::NumberOptions, ReflectInspectorOptions, Target,
+//     };
 
-    reg.data::<ReflectInspectorOptions>()
-        .and_then(|ReflectInspectorOptions(o)| {
-            o.get(if let Some(variant_index) = variant_index {
-                Target::VariantField {
-                    variant_index,
-                    field_index,
-                }
-            } else {
-                Target::Field(field_index)
-            })
-        })
-        .and_then(|o| o.downcast_ref::<NumberOptions<f32>>())
-        .map(|num| (num.min, num.max))
-}
+//     reg.data::<ReflectInspectorOptions>()
+//         .and_then(|ReflectInspectorOptions(o)| {
+//             o.get(if let Some(variant_index) = variant_index {
+//                 Target::VariantField {
+//                     variant_index,
+//                     field_index,
+//                 }
+//             } else {
+//                 Target::Field(field_index)
+//             })
+//         })
+//         .and_then(|o| o.downcast_ref::<NumberOptions<f32>>())
+//         .map(|num| (num.min, num.max))
+// }

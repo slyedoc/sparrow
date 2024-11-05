@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.3.12",
+		"generator":"Khronos glTF Blender I/O v4.3.24",
 		"version":"2.0"
 	},
 	"extensionsUsed":[
@@ -44,10 +44,15 @@
 				"sparrow_scene_props":{
 					"export":1
 				},
-				"bevy_components":"{\"basic::ItemType\": \"Scene\"}"
+				"bevy_components":"{\"basic::ItemType\": \"Scene\"}",
+				"SceneGravity":"(Vec3(0.0, -9.8100004196167, 0.0))"
 			},
 			"name":"Basic",
 			"nodes":[
+				0,
+				1,
+				2,
+				3,
 				4
 			]
 		}
@@ -61,10 +66,7 @@
 						{
 							"short_name":"ItemType",
 							"long_name":"basic::ItemType",
-							"2D1CCE2570E8B0B90FE8F5DE6A487AA579243DE530FA6E98_ui":{
-								"selection":0
-							},
-							"enabled":1
+							"2D1CCE2570E8B0B90FE8F5DE6A487AA579243DE530FA6E98_ui":{}
 						}
 					]
 				}
@@ -116,38 +118,46 @@
 			]
 		},
 		{
-			"children":[
-				0,
-				1,
-				2
-			],
 			"extras":{
+				"bevy_components":"{\"basic::ItemType\": \"Object\"}",
 				"components_meta":{
 					"components":[
 						{
-							"short_name":"Aabb",
-							"long_name":"bevy_render::primitives::Aabb",
-							"4D789FA2529DC174C88154FA68941AA3E26115FDE83916A9_ui":{},
-							"enabled":1
-						},
+							"short_name":"ItemType",
+							"long_name":"basic::ItemType",
+							"2D1CCE2570E8B0B90FE8F5DE6A487AA579243DE530FA6E98_ui":{}
+						}
+					]
+				}
+			},
+			"mesh":1,
+			"name":"Cube.001",
+			"translation":[
+				-3.421008825302124,
+				0.18264175951480865,
+				1.5613688230514526
+			]
+		},
+		{
+			"extras":{
+				"bevy_components":"{\"basic::ItemType\": \"Object\"}",
+				"components_meta":{
+					"components":[
 						{
 							"short_name":"ItemType",
 							"long_name":"basic::ItemType",
-							"2D1CCE2570E8B0B90FE8F5DE6A487AA579243DE530FA6E98_ui":{
-								"selection":1
-							}
+							"2D1CCE2570E8B0B90FE8F5DE6A487AA579243DE530FA6E98_ui":{}
 						}
 					]
-				},
-				"bevy_components":"{\"basic::ItemType\": \"Collection\"}"
+				}
 			},
-			"name":"Collection"
-		},
-		{
-			"children":[
-				3
-			],
-			"name":"Scene Collection"
+			"mesh":2,
+			"name":"Cube.002",
+			"translation":[
+				-1.551518440246582,
+				-0.4681818187236786,
+				-4.254184722900391
+			]
 		}
 	],
 	"cameras":[
@@ -192,6 +202,34 @@
 					"material":0
 				}
 			]
+		},
+		{
+			"name":"Cube.001",
+			"primitives":[
+				{
+					"attributes":{
+						"POSITION":4,
+						"NORMAL":5,
+						"TEXCOORD_0":6
+					},
+					"indices":3,
+					"material":0
+				}
+			]
+		},
+		{
+			"name":"Cube.002",
+			"primitives":[
+				{
+					"attributes":{
+						"POSITION":7,
+						"NORMAL":8,
+						"TEXCOORD_0":9
+					},
+					"indices":3,
+					"material":0
+				}
+			]
 		}
 	],
 	"accessors":[
@@ -228,6 +266,62 @@
 			"componentType":5123,
 			"count":36,
 			"type":"SCALAR"
+		},
+		{
+			"bufferView":4,
+			"componentType":5126,
+			"count":24,
+			"max":[
+				1,
+				1,
+				1
+			],
+			"min":[
+				-1,
+				-1,
+				-1
+			],
+			"type":"VEC3"
+		},
+		{
+			"bufferView":5,
+			"componentType":5126,
+			"count":24,
+			"type":"VEC3"
+		},
+		{
+			"bufferView":6,
+			"componentType":5126,
+			"count":24,
+			"type":"VEC2"
+		},
+		{
+			"bufferView":7,
+			"componentType":5126,
+			"count":24,
+			"max":[
+				1,
+				1,
+				1
+			],
+			"min":[
+				-1,
+				-1,
+				-1
+			],
+			"type":"VEC3"
+		},
+		{
+			"bufferView":8,
+			"componentType":5126,
+			"count":24,
+			"type":"VEC3"
+		},
+		{
+			"bufferView":9,
+			"componentType":5126,
+			"count":24,
+			"type":"VEC2"
 		}
 	],
 	"bufferViews":[
@@ -254,11 +348,47 @@
 			"byteLength":72,
 			"byteOffset":768,
 			"target":34963
+		},
+		{
+			"buffer":0,
+			"byteLength":288,
+			"byteOffset":840,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":288,
+			"byteOffset":1128,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":192,
+			"byteOffset":1416,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":288,
+			"byteOffset":1608,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":288,
+			"byteOffset":1896,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":192,
+			"byteOffset":2184,
+			"target":34962
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":840,
+			"byteLength":2376,
 			"uri":"Basic.bin"
 		}
 	]

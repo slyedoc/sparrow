@@ -509,10 +509,10 @@ class SPARROW_OT_ToggleComponentVisibility(bpy.types.Operator):
             components.visible = not components.visible
         return {'FINISHED'}
 
-
+# I am still figuring out if this is even needed
 class SPARROW_OT_components_refresh_custom_properties_all(Operator):
     """Apply registry to ALL objects: update the custom property values of all objects based on their definition, if any"""
-    bl_idname = "object.refresh_custom_properties_all" # Update SPARROW_PG_Settings::load_registry if you change this
+    bl_idname = "object.refresh_custom_properties_all"
     bl_label = "Apply Registry to all objects"
     bl_options = {"UNDO"}
 
@@ -538,7 +538,7 @@ class SPARROW_OT_components_refresh_custom_properties_all(Operator):
             #print(f"refreshing custom properties for {total}: {progress} {object.name}")
 
             context.window_manager.custom_properties_from_components_progress_all = progress
-        
+
         # now force refresh the ui
         #bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
         context.window_manager.custom_properties_from_components_progress_all = -1.0

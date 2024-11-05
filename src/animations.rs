@@ -1,8 +1,6 @@
 use std::time::Duration;
 
-use bevy::{
-    animation::AnimationTarget, prelude::*, utils::HashMap
-};
+use bevy::{animation::AnimationTarget, prelude::*, utils::HashMap};
 
 use crate::{SceneLoaded, SparrowSet};
 
@@ -57,14 +55,7 @@ impl Clips {
 
 pub fn scene_auto_play_animations(
     mut commands: Commands,
-    mut players: Query<
-        (
-            Entity,
-            &Animations,
-            &mut AnimationPlayer,
-        ),
-        Added<AnimationPlayer>,
-    >,
+    mut players: Query<(Entity, &Animations, &mut AnimationPlayer), Added<AnimationPlayer>>,
 ) {
     for (entity, animations, mut player) in &mut players {
         error!("Setting up scene for {:?}", entity);
@@ -89,7 +80,7 @@ pub fn scene_auto_play_animations(
 // from bevy scene viewer example
 #[allow(clippy::too_many_arguments)]
 pub fn set_animation_clips(
-    query: Query<&SceneLoaded, Changed<Handle<Scene>>>,
+    query: Query<&SceneLoaded, Changed<SceneRoot>>,
     mut players: Query<&mut AnimationPlayer>,
     targets: Query<(Entity, &AnimationTarget)>,
     parents: Query<&Parent>,
@@ -100,7 +91,6 @@ pub fn set_animation_clips(
     mut commands: Commands,
 ) {
     for scene_loaded in query.iter() {
-        
         let gltf = gltf_assets.get(&scene_loaded.0).unwrap();
         let animations = &gltf.animations;
         if animations.is_empty() {
@@ -154,7 +144,7 @@ pub fn set_animation_clips(
                                 // If we haven't found a player yet, record the one
                                 // we found.
                                 ancestor_player = Some(entity);
-                            },
+                            }
                             Some(ancestor) => {
                                 // If we have found a player, then make sure it's
                                 // the same player we located before.
@@ -163,7 +153,7 @@ pub fn set_animation_clips(
                                     ancestor_player = None;
                                     break;
                                 }
-                            },
+                            }
                         }
                     }
 
@@ -204,7 +194,9 @@ pub fn set_animation_clips(
             let graph = graphs.add(graph);
             let animations = Clips::new(clips);
             player.play(animations.current()).repeat();
-            commands.entity(player_entity).insert((animations, graph));
+            commands
+                .entity(player_entity)
+                .insert((animations, AnimationGraphHandle(graph)));
         }
     }
 }

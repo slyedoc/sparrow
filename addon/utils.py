@@ -143,11 +143,12 @@ CONVERSION_TABLES = {
     "alloc::string::String": lambda value: '"'+str(value)+'"',
     "alloc::borrow::Cow<str>": lambda value: '"'+str(value)+'"',
 
+    # TODO: remove letters from the glam strings
     "glam::Vec2": lambda value: "Vec2(x:"+str(value[0])+ ", y:"+str(value[1])+")",
     "glam::DVec2": lambda value: "DVec2(x:"+str(value[0])+ ", y:"+str(value[1])+")",
     "glam::UVec2": lambda value: "UVec2(x:"+str(int(value[0]))+ ", y:"+str(int(value[1]))+")",
 
-    "glam::Vec3": lambda value: "Vec3(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+")",
+    "glam::Vec3": lambda value: "Vec3("+str(value[0])+ ", "+str(value[1])+ ", "+str(value[2])+")",
     "glam::Vec3A": lambda value: "Vec3A(x:"+str(value[0])+ ", y:"+str(value[1])+ ", z:"+str(value[2])+")",
     "glam::UVec3": lambda value: "UVec3(x:"+str(int(value[0]))+ ", y:"+str(int(value[1]))+ ", z:"+str(int(value[2]))+")",
 

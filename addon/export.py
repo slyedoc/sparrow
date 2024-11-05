@@ -20,28 +20,9 @@ def sanitize_file_name(name: str) -> str:
     ]
     return ''.join(sanitized_parts)
 
-## Export a scene as single gltf file for bevy
-def export_scene(settings: SPARROW_PG_Settings, area, region, scene) -> bool:
-    success = False
-    path = settings.scene_folder()
-    os.makedirs(path, exist_ok=True)
-    gltf_path = settings.scene_path(scene)
-           
-    # Set Additional Scene Properties
-    if scene.use_gravity:
-        scene['SceneGravity'] = '(' + CONVERSION_TABLES['glam::Vec3']( [scene.gravity[0], scene.gravity[2], scene.gravity[1]] ) + ')'
-    else:
-        scene['SceneGravity'] = '(' + CONVERSION_TABLES['glam::Vec3']( [0,0,0] ) + ')'
-    
-    tmp_time = time.time()
-
-    # we set our active scene to active
-    bpy.context.window.scene = scene
-
-    layer_collection = scene.view_layers['ViewLayer'].layer_collection
-    bpy.context.view_layer.active_layer_collection = recurLayerCollection(layer_collection, scene.collection.name)
-        
-    # find collection instances to be replaced with 'empty' with blueprint name
+# go though scene and replace collection instances with blueprint name
+# returns a list of instances so they can be restored later
+def replace_collection_instances(settings: SPARROW_PG_Settings, scene: bpy.types.Scene) -> List[BlueprintInstance]:
     blueprints_instances: List[BlueprintInstance] = []        
     for obj in bpy.data.objects:         
         if scene.user_of_id(obj) == 0 or obj.instance_collection is None or obj.instance_collection.asset_data is None: 
@@ -58,6 +39,31 @@ def export_scene(settings: SPARROW_PG_Settings, area, region, scene) -> bool:
 
         # store so we can restore later
         blueprints_instances.append(inst)
+    return blueprints_instances
+
+## Export a scene as single gltf file for bevy
+def export_scene(settings: SPARROW_PG_Settings, area, region, scene) -> bool:
+    success = False
+    path = settings.scene_folder()
+    os.makedirs(path, exist_ok=True)
+    gltf_path = settings.scene_path(scene)
+           
+    # Set Additional Scene Properties
+    if scene.use_gravity:
+        scene['SceneGravity'] = '(' + CONVERSION_TABLES['glam::Vec3']( [ scene.gravity[0], scene.gravity[2], scene.gravity[1] ]) + ')'
+    else:
+        scene['SceneGravity'] = '(' + CONVERSION_TABLES['glam::Vec3']( [0,0,0] ) + ')'
+    
+    tmp_time = time.time()
+
+    # we set our active scene to active
+    bpy.context.window.scene = scene
+
+    layer_collection = scene.view_layers['ViewLayer'].layer_collection
+    bpy.context.view_layer.active_layer_collection = recurLayerCollection(layer_collection, scene.collection.name)
+        
+    # find collection instances to be replaced with 'empty' with blueprint name
+    blueprints_instances = replace_collection_instances(settings, scene)
     
     with bpy.context.temp_override(scene=scene, area=area, region=region):
             # detect scene mistmatch
@@ -76,7 +82,7 @@ def export_scene(settings: SPARROW_PG_Settings, area, region, scene) -> bool:
                 for inst in blueprints_instances:
                     inst.object.instance_collection = inst.collection                    
 
-    file_size = os.path.getsize(gltf_path) / (1024 * 1024)
+    file_size = os.path.getsize(settings.scene_path(scene, True)) / (1024 * 1024)
     print(f"{scene.name:30}: {time.time() - tmp_time:6.2f}s {file_size:.2f}MB")
     return success
 
@@ -102,13 +108,16 @@ def export_scene_blueprints(settings: SPARROW_PG_Settings, area, region, scene) 
         # create temp scene: this is needed otherwise the stand-in empties get generated in the wrong scene
         temp_scene = bpy.data.scenes.new(name=col.name)
 
-        # copy scene components
+        # copy scene components        
         if 'bevy_components' in col:
             temp_scene['bevy_components'] = col['bevy_components']
         else:
             # need to add something even if it has no components, so "GltfSceneExtras" is always added, can be used to flatten
             temp_scene['bevy_components'] = '{}' 
-                
+
+        # find collection instances to be replaced with 'empty' with blueprint name
+        blueprints_instances = replace_collection_instances(settings, scene)
+                    
         temp_root_collection = temp_scene.collection
         bpy.context.window.scene = temp_scene
 
@@ -132,7 +141,12 @@ def export_scene_blueprints(settings: SPARROW_PG_Settings, area, region, scene) 
                 finally:
                     # restore everything
                     bpy.data.scenes.remove(temp_scene, do_unlink=True)
-        file_size = os.path.getsize(gltf_path) / (1024 * 1024)
+
+        # restore collection instances
+        for inst in blueprints_instances:
+            inst.object.instance_collection = inst.collection                    
+
+        file_size = os.path.getsize(settings.blueprint_path(col, True)) / (1024 * 1024)
         print(f"{scene.name:30} {col.name:20} {time.time() - tmp_time:6.2f}s {file_size:.2f}mb")
     return success, failure
 

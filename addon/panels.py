@@ -70,7 +70,8 @@ def draw_components(item, layout, settings: SPARROW_PG_Settings, registry: Compo
 
         # we fetch the matching ui property group
         
-        root_propertyGroup_name = registry.get_propertyGroupName_from_longName(component_name)  
+        root_propertyGroup_name = registry.get_propertyGroupName_from_longName(component_name)
+          
         if root_propertyGroup_name is None:
             print(f"ERROR: {item_name} does not have component:", component_name)
             error_message = component_meta.invalid_details if component_meta.invalid else "Missing property group name"
@@ -101,7 +102,7 @@ def draw_components(item, layout, settings: SPARROW_PG_Settings, registry: Compo
 
         if component_meta.visible:
             if component_meta.invalid:
-
+                print(f"ERROR: {item_name} does not have component:", component_name)
                 error_message = component_meta.invalid_details if component_meta.invalid else "Missing component UI data, please reload registry !"
                 prop_group_location.label(text=error_message)
             else:
